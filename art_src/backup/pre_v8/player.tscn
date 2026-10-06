@@ -1,0 +1,143 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/player.gd" id="1_qhqgy"]
+[ext_resource type="Shader" path="res://scripts/vignette.gdshader" id="2_dqkch"]
+[ext_resource type="Script" path="res://scripts/health_arc.gd" id="3_qlg0r"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_tuyoq"]
+radius = 0.35
+height = 1.8
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_fjrip"]
+dof_blur_near_enabled = true
+dof_blur_near_distance = 0.35
+dof_blur_near_transition = 0.3
+dof_blur_amount = 0.08
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_smehm"]
+shader = ExtResource("2_dqkch")
+shader_parameter/strength = null
+shader_parameter/inner = null
+shader_parameter/outer = null
+shader_parameter/tint = null
+shader_parameter/grain = null
+
+[node name="Player" type="CharacterBody3D" unique_id=919192566 groups=["player"]]
+floor_max_angle = 0.80285144
+floor_snap_length = 0.45
+script = ExtResource("1_qhqgy")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1170018322]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_tuyoq")
+
+[node name="Head" type="Node3D" parent="." unique_id=1800390688]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Head" unique_id=753643665]
+attributes = SubResource("CameraAttributesPractical_fjrip")
+current = true
+far = 500.0
+
+[node name="InteractRay" type="RayCast3D" parent="Head/Camera3D" unique_id=1858798185]
+target_position = Vector3(0, 0, -2.6)
+collide_with_areas = true
+
+[node name="Lantern" type="OmniLight3D" parent="Head" unique_id=1258182471]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, -0.25, -0.1)
+visible = false
+light_color = Color(0.62, 0.72, 1, 1)
+light_energy = 0.6
+light_volumetric_fog_energy = 0.4
+omni_range = 7.0
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=660853855]
+
+[node name="Vignette" type="ColorRect" parent="HUD" unique_id=288090833]
+material = SubResource("ShaderMaterial_smehm")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Crosshair" type="ColorRect" parent="HUD" unique_id=1233588817]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -2.0
+offset_top = -2.0
+offset_right = 2.0
+offset_bottom = 2.0
+mouse_filter = 2
+color = Color(0.75, 0.8, 1, 0.45)
+
+[node name="Prompt" type="Label" parent="HUD" unique_id=772333078]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -400.0
+offset_top = -205.0
+offset_right = 400.0
+offset_bottom = -165.0
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.78, 0.84, 1, 1)
+horizontal_alignment = 1
+
+[node name="Toast" type="Label" parent="HUD" unique_id=1662758290]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -500.0
+offset_top = -158.0
+offset_right = 500.0
+offset_bottom = -123.0
+theme_override_font_sizes/font_size = 19
+theme_override_colors/font_color = Color(0.9, 0.9, 0.95, 1)
+horizontal_alignment = 1
+
+[node name="Banner" type="Label" parent="HUD" unique_id=1457406559]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -500.0
+offset_top = -120.0
+offset_right = 500.0
+theme_override_font_sizes/font_size = 42
+theme_override_colors/font_color = Color(0.95, 0.92, 0.85, 1)
+horizontal_alignment = 1
+
+[node name="HealthArc" type="Control" parent="HUD" unique_id=637490187]
+layout_mode = 3
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -126.0
+offset_right = 120.0
+offset_bottom = -14.0
+mouse_filter = 2
+script = ExtResource("3_qlg0r")
+
+[node name="HurtFlash" type="ColorRect" parent="HUD" unique_id=187870481]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.55, 0.05, 0.08, 0)
+
+[node name="Fade" type="ColorRect" parent="HUD" unique_id=1287434259]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0)

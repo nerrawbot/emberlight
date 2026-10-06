@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://mrr3bvpgqo08"]
+
+[ext_resource type="PackedScene" uid="uid://dvmhw2ucwfseu" path="res://assets/level/collapse.glb" id="1_0ouyp"]
+
+[node name="Surface5" unique_id=1962082119 instance=ExtResource("1_0ouyp")]
+
+[node name="Collapse" parent="." index="0" unique_id=1249362441]
+transform = Transform3D(1.2, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="CollisionShape3D" parent="CollapseBlock" parent_id_path=PackedInt32Array(1903170706) index="0" unique_id=645235417]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5992527, 2.0933914, 0.80231476)

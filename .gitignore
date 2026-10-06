@@ -1,0 +1,7 @@
+.godot/
+shots/
+art_src/*.log
+art_src/*.blend1
+*.zip
+EBLv1.app/
+.zip
