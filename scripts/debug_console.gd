@@ -8,6 +8,8 @@ const GameState := preload("res://scripts/game_state.gd")
 const SCENES := {"start": "res://scenes/start.tscn", "main": "res://scenes/main.tscn", "surface": "res://scenes/surface.tscn"}
 const HELP := """boss            surface, outside the Peak hall: weapon, drone, full health/shield, fresh boss
 god             toggle: no damage
+fly [speed]     toggle: free flight (Space up, Ctrl down, Shift x3); `fly 25` sets the speed
+noclip          toggle: fly through walls
 heal            full health + shield
 weapon / drone  give the shaft / the warden drone (shield)
 pennon          give the Pennon (glide: [Space] mid-air from 3 m up)
@@ -123,6 +125,14 @@ func _run(text: String) -> void:
 		"god":
 			player.set("god", not player.get("god"))
 			_print("god mode " + ("on" if player.get("god") else "off"))
+		"fly", "noclip":
+			if a.size() > 1:
+				player.set("fly_speed", maxf(1.0, float(a[1])))
+			var through := cmd == "noclip"
+			var same: bool = player.get("flying") and player.get("noclip") == through
+			var on := a.size() > 1 or not same
+			player.call("set_flying", on, through)
+			_print("%s on (speed %.0f)" % [cmd, float(player.get("fly_speed"))] if on else "%s off" % cmd)
 		"heal":
 			player.call("_set_health", float(player.get("max_health")))
 			if player.get("has_drone"):
