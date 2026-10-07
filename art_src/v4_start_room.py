@@ -7,7 +7,7 @@
 #   -> [valve lowers the drawbridge] -> left landing Z24 -> ladder -> broken-arch ledge Z13
 #   -> flight4 east -> bottom bridge Z5 over water -> tunnel east -> door to the cavern.
 # Re-runnable: every collection is rebuilt from scratch.
-exec(open(r"C:\Users\Pigeon\Documents\UnderworksCavern\art_src\gen_lib.py").read())
+exec(open(r"D:\Emberlight\art_src\gen_lib.py").read())
 import json
 
 if "StartRoom" not in bpy.data.scenes:

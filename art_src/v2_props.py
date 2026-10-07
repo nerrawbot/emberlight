@@ -1,5 +1,5 @@
 
-exec(open(r"C:\Users\Pigeon\Documents\UnderworksCavern\art_src\v2_creatures.py").read().split("T=\"TMP\"")[0])
+exec(open(r"D:\Emberlight\art_src\v2_creatures.py").read().split("T=\"TMP\"")[0])
 T="TMP"
 # ======================= LIFT CAR (local, platform top at z=0, faces +Y north) =======================
 def car():

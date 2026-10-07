@@ -11,7 +11,7 @@
 # Source: art_src/peak.blend, scene "Peak10" (the mesa is appended in REF_Mesa as a reference only, never exported).
 # Run:    exec(open(r"...\art_src\v10_peak.py").read()); build_all(); export_all()
 # Out:    assets/level/peak.glb  +  art_src/peak.json (layout, ladders, checkpoints, lamps; Blender coords)
-exec(open(r"C:\Users\Pigeon\Documents\UnderworksCavern\art_src\v5_surface.py").read())
+exec(open(r"D:\Emberlight\art_src\v5_surface.py").read())
 import json
 
 # v5_surface.py makes a "Surface5" scene if the file has none: here everything lives in "Peak10"

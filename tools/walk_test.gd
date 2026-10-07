@@ -348,14 +348,14 @@ func _run_surface_trip() -> void:
 	await _walk("surface: step off the car", p.global_position, -90.0, 1.4, func(v): return v.x > 23.0 and absf(v.y - 34.3) < 0.3)
 	# --- the route through the works to the lookout, and back
 	await _walk("surface: stair 1 up to the gallery", b(41.0, 12.0, 34.35), -90.0, 4.5, func(v): return v.x > 50.0 and absf(v.y - 40.0) < 0.3)
-	var look = _scene().get_node("Lookout")
+	var watcher = _scene().get_node("SiloWatcher")      # (v11: replaced the old "to be continued" Lookout)
 	await _walk("surface: gallery -> tower -> gantry -> block C", b(58.0, 14.0, 40.05), 180.0, 13.0, func(v): return absf(v.y - 46.0) < 0.3 and v.z > 28.0)
 	# v6: on past the old lookout - bridge 1, the pinnacle, bridge 2, the silo stair, the roof (the end) - and back
 	await _walk("surface: bridge 1 -> pinnacle", b(65.5, -35.0, 46.05), 180.0, 6.5, func(v): return absf(v.y - 46.0) < 0.3 and v.z > 57.0)
 	await _walk("surface: bridge 2 -> silo landing", b(66.5, -58.0, 46.05), -90.0, 5.5, func(v): return absf(v.y - 46.0) < 0.3 and v.x > 87.5)
 	await _walk("surface: silo flight A up", b(89.0, -51.5, 46.05), 0.0, 4.5, func(v): return absf(v.y - 52.0) < 0.3 and v.z < 37.5)
 	await _walk("surface: silo flight B up -> roof", b(89.0, -37.0, 52.05), -90.0, 3.0, func(v): return absf(v.y - 56.0) < 0.3 and v.x > 96.0)
-	await _walk("surface: silo roof -> the end", b(97.0, -37.0, 56.05), 180.0, 3.5, func(v): return absf(v.y - 56.0) < 0.3 and look.get("_triggered"))
+	await _walk("surface: silo roof -> SENTINEL-09", b(97.0, -37.0, 56.05), 180.0, 3.5, func(v): return absf(v.y - 56.0) < 0.3 and v.distance_to(watcher.global_position) < 4.0)
 	await _walk("surface: silo flight B down", b(97.0, -37.0, 56.05), 90.0, 3.0, func(v): return absf(v.y - 52.0) < 0.3 and v.x < 90.0)
 	await _walk("surface: silo flight A down", b(89.0, -37.0, 52.05), 180.0, 4.5, func(v): return absf(v.y - 46.0) < 0.3 and v.z > 55.0)
 	await _walk("surface: bridge 2 back", b(88.0, -58.0, 46.05), 90.0, 5.0, func(v): return absf(v.y - 46.0) < 0.3 and v.x < 72.0)

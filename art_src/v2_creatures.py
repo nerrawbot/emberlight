@@ -1,5 +1,5 @@
 
-exec(open(r"C:\Users\Pigeon\Documents\UnderworksCavern\art_src\gen_lib.py").read())
+exec(open(r"D:\Emberlight\art_src\gen_lib.py").read())
 sc=bpy.data.scenes["Scene"]
 def ccoll(name):
     c=bpy.data.collections.get(name)

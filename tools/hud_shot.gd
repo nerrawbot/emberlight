@@ -3,6 +3,8 @@ extends SceneTree
 ## godot --path . --script res://tools/hud_shot.gd -- <out_dir> scene=res://scenes/start.tscn [weapon] [drone] [hp=35] [shield=8] x,y,z,yaw,pitch ...
 ## Positions are Godot coords of the player's feet; yaw/pitch in degrees. `swing` as a view renders mid-swing.
 ## `drone` gives the warden drone (companion + shield arc); `shield=` sets its shield for every view.
+## call:NodePath:method:arg1~arg2 calls a method (args via str_to_var, else plain strings), e.g.
+##   call:Player:add_item:tokens~57   call:Player:start_dialogue:sentinel_09~SENTINEL-09   call:Player/HUD/Inventory:toggle
 
 func _init() -> void:
 	_run.call_deferred()
@@ -27,7 +29,7 @@ func _run() -> void:
 			shield = float(a.substr(7))
 		elif a.begins_with("hp="):
 			hp = float(a.substr(3))
-		elif a.begins_with("env:") or a.begins_with("set:"):      # env:volumetric_fog_enabled=false, set:Sun:visible=false
+		elif a.begins_with("env:") or a.begins_with("set:") or a.begins_with("call:"):      # env:volumetric_fog_enabled=false, set:Sun:visible=false
 			views.append(a)
 		else:
 			views.append(a)
@@ -49,6 +51,15 @@ func _run() -> void:
 			var parts: PackedStringArray = v.substr(4).split(":")
 			var kv2: PackedStringArray = parts[1].split("=")
 			main.get_node(parts[0]).set(kv2[0], str_to_var(kv2[1]))
+			continue
+		if v.begins_with("call:"):
+			var cp: PackedStringArray = v.substr(5).split(":")
+			var cargs := []
+			if cp.size() > 2:
+				for s in cp[2].split("~"):         # (not "|": cmd.exe eats it in godot.cmd)
+					var val: Variant = str_to_var(s)
+					cargs.append(s if val == null else val)
+			main.get_node(cp[0]).callv(cp[1], cargs)
 			continue
 		if v.begins_with("env:"):
 			var kv: PackedStringArray = v.substr(4).split("=")

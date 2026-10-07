@@ -1,7 +1,7 @@
 
 import bpy, bmesh, math, random, os
 from mathutils import Vector, Matrix, Quaternion, noise
-PROJ=r"C:\Users\Pigeon\Documents\UnderworksCavern"
+PROJ=r"D:\Emberlight"
 TEX=os.path.join(PROJ,"art_src","tex")
 
 def coll(name):

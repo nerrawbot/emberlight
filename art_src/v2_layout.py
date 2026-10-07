@@ -1,5 +1,5 @@
 
-exec(open(r"C:\Users\Pigeon\Documents\UnderworksCavern\art_src\gen_lib.py").read())
+exec(open(r"D:\Emberlight\art_src\gen_lib.py").read())
 import json
 S2="S2"; D2="D2"; P2="P2"; R2="R2"
 for c in (S2,D2,P2,R2): coll(c)

@@ -9,7 +9,7 @@
 # Built in Blender scene "Surface5" (collection S8_CollapseC), exported to assets/level/collapse.glb:
 #   Collapse-col (mesh + trimesh), CollapseBlock-colonly (stops anyone squeezing between the talus and the plug).
 # Run: exec(open(r"...\art_src\v8_collapse.py").read()); build_collapse(); export_collapse()   (Surface5 active for export)
-exec(open(r"C:\Users\Pigeon\Documents\UnderworksCavern\art_src\v5_surface.py").read())
+exec(open(r"D:\Emberlight\art_src\v5_surface.py").read())
 
 C8 = dict(
     x0=31.6, x1=47.4, y0=-0.1, y1=8.1,      # plug footprint

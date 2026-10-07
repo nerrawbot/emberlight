@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -q -m 'Add Sphaeroid boss, Pennon glider, cable car station, station and peak updates *)",
+      "Bash(git push *)"
+    ]
+  }
+}

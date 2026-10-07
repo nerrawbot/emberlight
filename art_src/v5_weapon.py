@@ -4,7 +4,7 @@
 # Local frame: the shaft runs along +Z (Godot +Y), origin = where the hand grips it.
 #   butt cap z -0.22 .. leather-wrapped grip .. hex collar z 0.11 .. bare shaft .. bolted coupling head .. tip z 0.86
 # Run: exec(open(r"...\art_src\v5_weapon.py").read()); build_shaft(); export_shaft()
-exec(open(r"C:\Users\Pigeon\Documents\UnderworksCavern\art_src\gen_lib.py").read())
+exec(open(r"D:\Emberlight\art_src\gen_lib.py").read())
 
 if "Props5" not in bpy.data.scenes:
     bpy.data.scenes.new("Props5")

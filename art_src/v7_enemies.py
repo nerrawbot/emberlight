@@ -8,7 +8,7 @@
 #   SKATE  - a hovering ray-shaped drone: Skate_Hull > Skate_Core (glowing furnace under the belly),
 #            Skate_WingL/R (origin on the hinge, flap about the forward axis), Skate_TailL0..2 / R0..2 (chains).
 # Facing Blender +Y (= Godot -Z). Run: exec(open(r"...\art_src\v7_enemies.py").read()); build_all(); export_all()
-exec(open(r"C:\Users\Pigeon\Documents\UnderworksCavern\art_src\gen_lib.py").read())
+exec(open(r"D:\Emberlight\art_src\gen_lib.py").read())
 
 if "Enemies7" not in bpy.data.scenes:
     bpy.data.scenes.new("Enemies7")

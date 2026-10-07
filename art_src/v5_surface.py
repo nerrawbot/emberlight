@@ -18,7 +18,7 @@
 # and every walkable edge guarded through rail()/guard()/gflight() (1.8 m invisible boxes: the jump apex is ~1.4 m).
 #
 # Run: exec(open(r"...\art_src\v5_surface.py").read()); build_all(); export_all()
-exec(open(r"C:\Users\Pigeon\Documents\UnderworksCavern\art_src\gen_lib.py").read())
+exec(open(r"D:\Emberlight\art_src\gen_lib.py").read())
 import json
 
 if "Surface5" not in bpy.data.scenes:
@@ -434,6 +434,58 @@ def ladder_vis(D, x, y, z0, z1, along='x', w=0.5):
         z = z0 + 0.3 + k * 0.32
         member(D, "M_Steel", Vector((x, y, z)) - ox, Vector((x, y, z)) + ox, 0.035, 0.035)
 
+def pipe_path(pts, bend):
+    """Polyline -> smooth path: every corner is rounded with radius `bend` (clipped to the neighbouring legs)."""
+    P = [Vector(p) for p in pts]
+    out = [P[0]]; tangent_pts = []
+    for i in range(1, len(P) - 1):
+        a, b, c = P[i - 1], P[i], P[i + 1]
+        d0 = (b - a).normalized(); d1 = (c - b).normalized()
+        ang = d0.angle(d1, 0.0)
+        if ang < 1e-3:
+            out.append(b); continue
+        t = min(bend * math.tan(ang / 2), (b - a).length * 0.45, (c - b).length * 0.45)
+        p0 = b - d0 * t; p1 = b + d1 * t
+        tangent_pts += [(p0, d0), (p1, d1)]
+        n = max(4, int(math.degrees(ang) / 10))
+        for k in range(n + 1):
+            s = k / n
+            out.append(p0 * (1 - s) ** 2 + b * 2 * (1 - s) * s + p1 * s * s)
+    out.append(P[-1])
+    path = [out[0]]
+    for p in out[1:]:
+        if (p - path[-1]).length > 1e-4: path.append(p)
+    return path, tangent_pts
+
+def pipe_run(cat, mat, pts, r, bend=None, seg=14, name="pipe", collars=True):
+    """v12: one continuous swept tube through `pts` with rounded bends (the old runs were straight cylinders butted
+    together, which read as broken pieces at every corner). Collars where each bend starts and ends."""
+    path, tps = pipe_path(pts, bend if bend else max(2.2 * r, 0.6))
+    tans = []
+    for i in range(len(path)):
+        if i == 0: t = path[1] - path[0]
+        elif i == len(path) - 1: t = path[-1] - path[-2]
+        else: t = (path[i + 1] - path[i]).normalized() + (path[i] - path[i - 1]).normalized()
+        tans.append(t.normalized())
+    ref = Vector((0, 0, 1)) if abs(tans[0].z) < 0.9 else Vector((1, 0, 0))
+    u = tans[0].cross(ref).normalized()
+    bm = bmesh.new(); rings = []
+    for i, p in enumerate(path):
+        u = (u - tans[i] * u.dot(tans[i])).normalized()      # parallel transport: no twisting round the bends
+        v = tans[i].cross(u)
+        rings.append([bm.verts.new(p + (u * math.cos(2 * math.pi * k / seg) + v * math.sin(2 * math.pi * k / seg)) * r) for k in range(seg)])
+    for i in range(len(rings) - 1):
+        for k in range(seg):
+            bm.faces.new((rings[i][k], rings[i][(k + 1) % seg], rings[i + 1][(k + 1) % seg], rings[i + 1][k]))
+    bm.faces.new(list(reversed(rings[0]))); bm.faces.new(rings[-1])
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    for fc in bm.faces: fc.smooth = True
+    ob = mk_obj(name, bm, mat, cat)
+    if collars:
+        for (p, d) in tps:
+            cyl(cat, "M_Steel", p - d * 0.07, p + d * 0.07, r + 0.07, seg, name + "_collar")
+    return ob
+
 def wires(D, pts, sag=1.0, n=24, r=0.025):
     """Sagging cables through a list of points."""
     for p0, p1 in zip(pts[:-1], pts[1:]):
@@ -469,12 +521,13 @@ def works(C, D, R):
         x = gx0 + 2.0 * i
         member(C, "M_Steel", (x, gy0, G + 0.5), (x + 2.0, gy0, gz - 0.4), 0.08, 0.08)
     # pale pipes looping under the deck (the white bends in the painting)
+    # v12: one continuous run each - up out of the ground east of the gallery, west under it, up its west side, then
+    # in under the deck and up into it (they used to start and stop in mid-air, built from butted cylinders)
     for (yy, r) in ((19.0, 0.62), (21.2, 0.5)):
-        cyl(C, "M_PalePipe", (63.0, yy, G + 1.6), (51.5, yy, G + 1.6), r, 14, "pipe")
-        cyl(C, "M_PalePipe", (51.5, yy, G + 1.6), (49.6, yy, G + 2.9), r, 14, "pipe_b")
-        cyl(C, "M_PalePipe", (49.6, yy, G + 2.9), (49.6, yy, gz - 1.0), r, 14, "pipe_up")
-        cyl(C, "M_PalePipe", (49.6, yy, gz - 1.0), (51.2, yy, gz - 1.05), r, 14, "pipe_t")     # turns in under the deck
-        cyl(C, "M_Steel", (51.2, yy, gz - 1.05), (51.45, yy, gz - 1.05), r + 0.08, 14, "pipe_cap")
+        pipe_run(C, "M_PalePipe", [(64.8, yy, G - 1.2), (64.8, yy, G + 1.6), (49.6, yy, G + 1.6), (49.6, yy, gz - 0.95),
+                                   (52.8, yy, gz - 0.95), (52.8, yy, gz - 0.02)], r)
+        cyl(C, "M_Concrete", (64.8, yy, G - 0.6), (64.8, yy, G + 0.25), r + 0.35, 10, "pipe_plinth")
+        cyl(C, "M_Steel", (52.8, yy, gz - 0.42), (52.8, yy, gz - 0.3), r + 0.12, 14, "pipe_collar")
         for x in (52.5, 56.0, 59.5, 62.6):
             cyl(C, "M_Steel", (x, yy, G + 1.6 - r - 0.1), (x, yy, G - 0.6), 0.12, 8, "saddle")
             cyl(C, "M_Steel", (x - 0.1, yy, G + 1.6), (x + 0.1, yy, G + 1.6), r + 0.06, 14, "flange")
@@ -515,7 +568,7 @@ def works(C, D, R):
     member(C, "M_Steel", (70.6, -2.0, 64.0), (72.4, -2.0, 64.0), 0.06, 0.06)
     streaks(D, 61.6, 72.8, -0.2 + 9.2, 34.5, 44.0, 14, 11, face=1)
     streaks(D, 61.2, 73.3, -11.5, 34.5, 56.0, 18, 12, face=-1)
-    for (x, y) in ((61.0, -6.0), (61.0, 4.0)):      # dark window slots
+    for (x, y) in ((61.0, -6.0), (61.5, 4.0)):      # dark window slots (on bunker B's / bunker A's west face; v12: A's was 0.5 m off)
         boxmm(D, "M_Silhouette", x - 0.06, x, y - 1.6, y + 1.6, 49.0 if y < 0 else 41.5, 50.2 if y < 0 else 42.5, "slot", 0.0)
     # v6 detail: bunker A - plinth, string course, door, slots, downpipes; bunker B - window rows, bands, roof clutter
     boxmm(C, "M_Concrete", 61.3, 73.2, -0.2, 9.3, G - 0.5, G + 0.7, "plinthA", 0.04)
@@ -570,6 +623,13 @@ def works(C, D, R):
     # lamp mast on the tower top + sign board
     boxmm(C, "M_Rust", tx0 + 0.4, tx1 - 0.4, ty0 + 0.5, ty0 + 0.62, 50.0, 52.4, "sign", 0.02)
     boxmm(D, "M_Hazard", tx0 + 0.5, tx1 - 0.5, ty0 + 0.45, ty0 + 0.5, 50.1, 50.5, "sign_haz", 0.0)
+    # v12: the board floated 4 m over the deck - two posts carry it, the west one runs on up as the lamp mast
+    for px in (tx0 + 0.45, tx1 - 0.45):
+        ibeam(C, (px, ty0 + 0.72, tdz), (px, ty0 + 0.72, 54.6 if px < 58.0 else 52.6), h=0.2, w=0.16)
+        for pz in (50.3, 52.1):
+            member(C, "M_Steel", (px, ty0 + 0.62, pz), (px, ty0 + 0.82, pz), 0.1, 0.1, "sign_cleat")
+    member(C, "M_Steel", (tx0 + 0.45, ty0 + 0.72, 54.45), (tx0 + 1.6, ty0 + 0.72, 54.45), 0.08, 0.08, "lamp_arm")
+    cyl(D, "M_Lamp", (tx0 + 1.6, ty0 + 0.72, 54.4), (tx0 + 1.6, ty0 + 0.72, 54.2), 0.22, 10, "lampshade_t", r2=0.1)
     cyl(C, "M_Rust", (55.9, -1.2, 40.0), (55.9, -1.2, 40.9), 0.55, 14, "spool")        # cable drum on the Z40 deck
     for z in (40.0, 40.9):
         cyl(C, "M_Steel", (55.9, -1.2, z - 0.02), (55.9, -1.2, z + 0.02), 0.75, 14, "spool_rim")
@@ -583,10 +643,20 @@ def works(C, D, R):
     for k in range(int(ay1 - ay0) // 2 + 1):
         y = ay0 + 2.0 * k
         member(C, "M_Steel", (ax0, y, az - 0.3), (ax1 + 2.4, y, az - 0.3), 0.14, 0.24)
+    # v12: both now end in something - the low one drops to a ground plinth beside the tower, the high one comes out
+    # of bunker B's wall; at block C both run into a valve house on the roof (they used to stop in mid-air)
+    cx0_, cx1_, cy0_, cy1_, cz_ = L5["blockC"]
+    pipe_run(C, "M_PalePipe", [(60.1, -11.85, G - 1.0), (60.1, -11.85, az + 0.3), (60.1, -27.9, az + 0.3)], 0.58, seg=16)
+    cyl(C, "M_Concrete", (60.1, -11.85, G - 0.6), (60.1, -11.85, G + 0.3), 0.95, 10, "gpipe_plinth")
+    pipe_run(C, "M_PalePipe", [(61.4, -10.9, az + 1.5), (61.4, -27.9, az + 1.5)], 0.46, seg=16)
+    cyl(C, "M_Steel", (61.4, -11.62, az + 1.5), (61.4, -11.48, az + 1.5), 0.58, 16, "gwall_collar")
     for (x, z, r) in ((60.1, az + 0.3, 0.58), (61.4, az + 1.5, 0.46)):
-        cyl(C, "M_PalePipe", (x, -11.2, z), (x, -27.2, z), r, 16, "gpipe")
         for y in (-14.0, -19.0, -24.0):
             cyl(C, "M_Steel", (x, y - 0.1, z), (x, y + 0.1, z), r + 0.07, 16, "gflange")
+    boxmm(C, "M_Concrete2", 59.25, 62.25, -28.6, -27.3, cz_ - 0.1, cz_ + 2.4, "valvehouse", 0.04)
+    boxmm(C, "M_Steel", 59.1, 62.4, -28.75, -27.15, cz_ + 2.4, cz_ + 2.55, "valvehouse_lid", 0.02)
+    cyl(C, "M_Rust", (62.25, -27.95, cz_ + 1.2), (62.45, -27.95, cz_ + 1.2), 0.08, 8, "valve_stem")
+    cyl(C, "M_Rust", (62.45, -27.95, cz_ + 1.2), (62.5, -27.95, cz_ + 1.2), 0.32, 12, "valve_wheel")
     for x in (ax0, ax1 + 2.4):    # mid pier
         ibeam(C, (x, -19.0, G - 1.0), (x, -19.0, az - 0.4), h=0.38, w=0.3)
     xbrace(C, (ax0, -19.0), (ax1 + 2.4, -19.0), G, az - 0.5, 0.12)
@@ -672,8 +742,10 @@ def cove(C, D, R):
         ibeam(C, (x, -43.5, G - 1.0), (x, -43.5, bz - 0.6), h=0.4, w=0.32)
     xbrace(C, (bx0 - 0.3, -43.5), (bx1 + 0.3, -43.5), G + 0.5, bz - 1.0, 0.12)
     member(C, "M_Steel", (bx0 - 0.5, -43.5, bz - 0.7), (bx1 + 0.5, -43.5, bz - 0.7), 0.3, 0.3)
-    cyl(C, "M_PalePipe", (bx1 + 0.75, by1 - 0.4, bz - 0.15), (bx1 + 0.75, by0 + 0.6, bz - 0.15), 0.4, 14, "bpipe")
-    cyl(C, "M_PalePipe", (bx1 + 0.75, by0 + 0.6, bz - 0.15), (bx1 + 0.75, by0 + 0.6, bz - 3.5), 0.4, 14, "bpipe_dn")
+    # v12: out of block C's south wall, along the bridge, then down and into the pinnacle's rock under the deck pad
+    pipe_run(C, "M_PalePipe", [(bx1 + 0.75, by1 + 0.6, bz - 0.15), (bx1 + 0.75, by0 + 0.7, bz - 0.15), (bx1 + 0.75, by0 + 0.7, 43.7),
+                               (bx1 + 0.75, by0 - 1.3, 43.7)], 0.4)
+    cyl(C, "M_Steel", (bx1 + 0.75, by1 + 0.08, bz - 0.15), (bx1 + 0.75, by1 - 0.06, bz - 0.15), 0.52, 14, "bwall_collar")
     for y in (-41.0, -46.0, -51.0):
         cyl(C, "M_Steel", (bx1 + 0.75, y - 0.1, bz - 0.15), (bx1 + 0.75, y + 0.1, bz - 0.15), 0.47, 14, "bflange")
         member(C, "M_Steel", (bx1, y, bz - 0.55), (bx1 + 1.2, y, bz - 0.55), 0.1, 0.1)
@@ -707,7 +779,15 @@ def cove(C, D, R):
     catwalk(C, D, R, qx0, qx1, qy0, qy1, qz, 'x')
     for y in (qy0 - 0.1, qy1 + 0.1):
         truss(D, Vector((qx0, y, qz - 2.6)), Vector((qx1, y, qz - 2.6)), height=2.0, mat="M_Steel", panel=2.2, sz=0.12)
-    cyl(C, "M_PalePipe", (qx0 - 1.0, qy0 - 0.9, qz - 3.4), (qx1 + 1.0, qy0 - 0.9, qz - 4.4), 0.45, 14, "slungpipe")
+    # v12: rises into the pinnacle's deck pad at the west end and into the silo landing's deck frame at the east end,
+    # hung off the truss's bottom chord between (it used to hang on nothing and stop short at both ends)
+    spy = qy0 - 0.55
+    pipe_run(C, "M_PalePipe", [(qx0 - 0.9, spy, 45.3), (qx0 - 0.9, spy, qz - 3.4), (qx1 + 1.0, spy, qz - 4.4), (qx1 + 1.0, spy, 45.85)], 0.45)
+    for k in range(1, 6):
+        x = qx0 + (qx1 - qx0) * k / 6.0
+        pz_ = (qz - 3.4) - ((x - qx0 + 0.9) / (qx1 - qx0 + 1.9))
+        member(D, "M_Steel", (x, qy0 - 0.1, qz - 2.6), (x, spy, pz_ + 0.4), 0.06, 0.06, "pipe_hanger")
+        cyl(D, "M_Steel", (x - 0.05, spy, pz_), (x + 0.05, spy, pz_), 0.5, 14, "pipe_clamp")
     # silo landing: cantilevered deck on struts from the cliff face; legs to the ground under its back edge
     sx0, sx1, sy0, sy1, sz = L5["silo_deck"]
     deck5(C, sx0, sx1, sy0, sy1, sz)
@@ -778,7 +858,10 @@ def silo(C, D, R):
     # lattice mast on the north-west corner (taller than anything: it reads from the landing)
     lattice(C, D, x0 + 1.3, y1 - 1.3, rz, 13.0, 0.9, 0.3, 91)
     # sagging cables off the mast into the haze
-    wires(D, [(x0 + 1.3, y1 - 1.3, rz + 12.5), (140.0, -10.0, 70.0)], sag=3.0)
+    # v12: they used to end in mid-air past the rim; now they come in from the east pylon's crossarm (scatter())
+    pyz = ground_h(106.0, -28.0) - 0.5 + 16.5
+    cyl(D, "M_PalePipe", (106.0, -28.0, pyz - 0.42), (106.0, -28.0, pyz - 0.1), 0.06, 6, "insul")
+    wires(D, [(x0 + 1.3, y1 - 1.3, rz + 12.5), (106.0, -28.0, pyz - 0.42)], sag=3.0)
 
 def lattice(C, D, x, y, z0, h, w0, w1, seed):
     """Tapering 4-legged lattice tower (pylon / mast)."""
@@ -872,8 +955,7 @@ def pump_house(C, D, cx, cy, seed=3):
     # the pipe: out of the west wall, over to bunker A's east face (73, 4)
     py = cy - 1.2; r = 0.55
     pts = [(x0, py, zg + 1.6), (80.0, py, zg + 1.6), (78.0, 4.0, zg + 1.6), (73.2, 4.0, zg + 1.6)]
-    for a, b in zip(pts[:-1], pts[1:]):
-        cyl(C, "M_PalePipe", a, b, r, 14, "ppipe")
+    pipe_run(C, "M_PalePipe", [(x0 + 0.6,) + tuple(pts[0][1:])] + pts[1:-1] + [(72.6, 4.0, zg + 1.6)], r)   # v12: one smooth run
     for (a, b) in zip(pts[:-1], pts[1:]):
         L = (Vector(b) - Vector(a)).length
         for k in range(1, int(L / 4.0) + 1):
@@ -927,6 +1009,88 @@ def scatter(C, D):
         wires(D, [start[k], mast[k]], sag=1.2)
         wires(D, [mast[k]] + [p[k] for p in poles], sag=1.6)
     wires(D, [poles[-1][1], (-26.5, 1.0, G + 13.5)], sag=1.0)          # onto the frame ruin's tallest column
+
+# ---------------------------------------------------------------- v12: collapsed building ruins (climbable)
+# Short shells of small buildings: a cracked floor slab, broken walls 0.5 m thick (tops are walkable) whose pieces step
+# up at most 0.9 m from their neighbour (the jump apex is ~1.4 m), corner pillars, rubble heaps, a fallen slab leaning
+# on a wall as a ramp, rebar. Spots were picked by v12_floaters.py-style checks: inside the rim, gentle ground, clear of
+# KEEP_CLEAR_* (route lines, buildings) and of the works' collision and the loot crates.
+RUINS = [  # cx, cy, w, d, yaw (deg), max wall height, seed
+    (44.0, -33.0, 8.0, 6.0, 8.0, 2.6, 1), (44.5, -19.0, 6.0, 5.0, -14.0, 2.0, 2), (78.5, -33.5, 7.0, 5.5, 22.0, 2.4, 3),
+    (-28.0, -30.0, 9.0, 6.5, 31.0, 3.0, 4), (-2.0, -34.0, 7.0, 5.0, -17.0, 2.2, 5), (60.0, 70.0, 8.0, 6.0, 12.0, 2.8, 6),
+]
+
+def ruin(C, D, cx, cy, w, d, yaw, hmax, seed):
+    rnd = random.Random(900 + seed)
+    ca, sa = math.cos(math.radians(yaw)), math.sin(math.radians(yaw))
+    Lw = lambda lx, ly, z=0.0: Vector((cx + lx * ca - ly * sa, cy + lx * sa + ly * ca, z))
+    gs = [ground_h(*Lw(i * w / 4, j * d / 4).xy) for i in range(-2, 3) for j in range(-2, 3)]
+    g0, g1 = min(gs), max(gs)
+    zf = g1 + 0.12                      # floor slab top
+    wall_mat = ("M_Concrete2", "M_Concrete3")[seed % 2]
+    # floor: two slabs, cracked across the middle, one sunk a little
+    split = rnd.uniform(-0.15, 0.15) * w
+    for (a, b, drop) in ((-w / 2, split - 0.05, 0.0), (split + 0.05, w / 2, rnd.choice((0.0, 0.14)))):
+        member(C, "M_Concrete", Lw(a, 0, (g0 - 0.4 + zf - drop) / 2), Lw(b, 0, (g0 - 0.4 + zf - drop) / 2), d, zf - drop - (g0 - 0.4), "rfloor")
+    # walls: the four sides as a loop of pieces; heights do a random walk (up <= 0.9 a piece), with a doorway gap
+    t = 0.5
+    sides = [((-w / 2, -d / 2), (w / 2, -d / 2)), ((w / 2, -d / 2), (w / 2, d / 2)), ((w / 2, d / 2), (-w / 2, d / 2)),
+             ((-w / 2, d / 2), (-w / 2, -d / 2))]
+    door_side = rnd.randrange(4)
+    h = rnd.uniform(0.5, 0.85)
+    tops = []                           # (piece centre, height) for the ramp
+    corner_h = []
+    for si, (a, b) in enumerate(sides):
+        a = Vector(a); b = Vector(b)
+        L = (b - a).length; n = max(2, int(round(L / 1.25)))
+        dv = (b - a) / L
+        nrm = Vector((dv.y, -dv.x))     # outward (the loop runs anticlockwise)
+        corner_h.append(h)
+        for k in range(n):
+            if si == door_side and k in (n // 2 - 1, n // 2) if n > 3 else (si == door_side and k == n // 2):
+                h = rnd.uniform(0.45, 0.8)         # the doorway: nothing here, and the next piece starts low
+                continue
+            if rnd.random() < 0.12:                # collapsed to a stub
+                h = rnd.uniform(0.3, 0.6)
+            else:
+                h = min(hmax, max(0.35, h + rnd.uniform(-0.75, 0.9)))
+            p0 = a + dv * (k * L / n + 0.02) - nrm * (t / 2); p1 = a + dv * ((k + 1) * L / n - 0.02) - nrm * (t / 2)
+            zb = g0 - 0.3; zt = zf + h
+            member(C, wall_mat, Lw(*p0, (zb + zt) / 2), Lw(*p1, (zb + zt) / 2), t, zt - zb, "rwall")
+            tops.append(((p0 + p1) / 2, h, nrm))
+            if rnd.random() < 0.35:                # rebar out of the broken top
+                q = Lw(*(p0.lerp(p1, rnd.uniform(0.2, 0.8))), zt)
+                member(D, "M_Rust", q - Vector((0, 0, 0.1)), q + Vector((rnd.uniform(-0.2, 0.2), rnd.uniform(-0.2, 0.2), rnd.uniform(0.3, 0.6))), 0.025, 0.025, "rebar")
+    # corner pillars: never more than 0.9 above the lower of the two walls they join, so they can be climbed too
+    for ci, (cxl, cyl) in enumerate(((-w / 2, -d / 2), (w / 2, -d / 2), (w / 2, d / 2), (-w / 2, d / 2))):
+        near = [hh for (pc, hh, _n) in tops if (pc - Vector((cxl, cyl))).length < 1.6]
+        ph = min(hmax + 0.4, (min(near) if near else 0.6) + rnd.uniform(0.2, 0.9))
+        q = Vector((cxl, cyl)) * (1.0 - 0.25 / max(abs(cxl), abs(cyl)))
+        zc = (g0 - 0.3 + zf + ph) / 2
+        member(C, wall_mat, Lw(q.x - 0.31, q.y, zc), Lw(q.x + 0.31, q.y, zc), 0.62, zf + ph - g0 + 0.3, "rpillar")
+    # rubble: a heap inside one corner, a couple of lumps outside the walls (steps up from the ground)
+    ic = Vector((rnd.choice((-1, 1)) * (w / 2 - 1.2), rnd.choice((-1, 1)) * (d / 2 - 1.1)))
+    rockblob(C, tuple(Lw(*ic, zf - 0.25)), (1.4, 1.1, 0.75), amp=0.3, seed=700 + seed, sub=2, mat="M_Concrete", name="rubble")
+    for k in range(2):
+        pc, hh, nrm = rnd.choice(tops)
+        q = pc + nrm * rnd.uniform(0.7, 1.0)
+        rockblob(C, tuple(Lw(*q, ground_h(*Lw(*q).xy) - 0.15)), (0.9, 0.8, 0.55), amp=0.3, seed=720 + seed * 3 + k, sub=2,
+                 mat="M_Concrete", name="rubble")
+    # a fallen roof slab leaning on a wall piece 1.3..2.2 high: a ramp (<= ~38 deg) up onto the wall tops
+    cands = [(pc, hh, nrm) for (pc, hh, nrm) in tops if 1.3 <= hh <= 2.2]
+    if cands:
+        pc, hh, nrm = rnd.choice(cands)
+        run = (hh + zf - g0) / math.tan(math.radians(34.0))
+        top = Lw(*(pc + nrm * 0.1), zf + hh - 0.05)
+        foot = Lw(*(pc + nrm * (run + 0.1)), 0.0); foot.z = ground_h(foot.x, foot.y) - 0.12
+        member(C, "M_Concrete", foot, top, 1.5, 0.22, "rslab")
+    # a bent steel column standing in the shell
+    q = Lw(rnd.uniform(-0.25, 0.25) * w, rnd.uniform(-0.2, 0.2) * d, zf)
+    ibeam(C, q - Vector((0, 0, 0.3)), q + Vector((rnd.uniform(-0.4, 0.4), rnd.uniform(-0.4, 0.4), rnd.uniform(1.6, 2.6))), h=0.24, w=0.2, mat="M_Rust")
+
+def ruins(C, D):
+    for (cx, cy, w, d, yaw, hmax, seed) in RUINS:
+        ruin(C, D, cx, cy, w, d, yaw, hmax, seed)
 
 # ---------------------------------------------------------------- grass tufts (bright yellow-green, like the painting)
 def grass_spots():
@@ -1137,6 +1301,8 @@ KEEP_CLEAR_BOXES = [(50.0, 62.5, 8.5, 24.5), (61.0, 74.5, -12.0, 9.5), (54.5, 61
                     (89.5, 98.5, -50.5, -37.5), (87.5, 98.5, 15.0, 23.0), (-24.0, -16.0, 32.5, 39.5), (-42.5, -25.5, 0.0, 12.0),
                     (4.0, 12.0, 46.0, 54.0), (17.0, 24.5, -7.0, 0.5), (32.5, 48.0, -0.5, 7.0), (85.5, 98.5, -60.5, -49.5),
                     (56.5, 59.5, -27.0, -11.0), (63.0, 73.0, -65.0, -55.0)]
+KEEP_CLEAR_BOXES += [(cx - max(w, d) / 2 - 0.8, cx + max(w, d) / 2 + 0.8, cy - max(w, d) / 2 - 0.8, cy + max(w, d) / 2 + 0.8)
+                     for (cx, cy, w, d, _y, _h, _s) in RUINS]     # v12: the ruins
 
 def clear_spot(x, y, pad=0.0):
     for (x0, x1, y0, y1) in KEEP_CLEAR_BOXES:
@@ -1327,6 +1493,7 @@ def build_structures():
     works(C, D, R)
     cove(C, D, R)
     scatter(C, D)
+    ruins(C, D)                # v12
     plants(R)                  # v8 (trunk collision posts go into R)
     merge_into("S5_Works-col", C)
     merge_into("S5_Detail", D)

@@ -64,6 +64,12 @@ func _init() -> void:
 	build_particles()
 	build_exits_and_spawns()
 	build_peak()
+	build_station()
+	build_story()
+	var paint := Node.new()        # last, so it repaints after everything else is in (painterly_world.gd)
+	paint.name = "PainterlyWorld"
+	paint.set_script(load("res://scripts/painterly_world.gd"))
+	add(main_root, paint)
 
 	var ps := PackedScene.new()
 	ps.pack(main_root)
@@ -78,15 +84,12 @@ func build_environment() -> void:
 	var env := Environment.new()
 	env.background_mode = Environment.BG_SKY
 	var sky := Sky.new()
-	var sm := ProceduralSkyMaterial.new()
-	sm.sky_top_color = Color(0.82, 0.80, 0.74)
-	sm.sky_horizon_color = Color(0.96, 0.93, 0.84)
-	sm.sky_curve = 0.12
-	sm.ground_horizon_color = Color(0.93, 0.9, 0.82)
-	sm.ground_bottom_color = Color(0.66, 0.63, 0.57)
-	sm.sun_angle_max = 40.0
-	sm.sun_curve = 0.08
+	# painted late-afternoon sky (warm horizon, lilac zenith, gold halo, brushy cloud strata); the sun disk follows Sun
+	var sm := ShaderMaterial.new()
+	sm.shader = load("res://scripts/surface_sky.gdshader")
+	sm.set_shader_parameter("brush", load("res://assets/creatures/sph_paint_brush.png"))
 	sky.sky_material = sm
+	sky.radiance_size = Sky.RADIANCE_SIZE_128
 	env.sky = sky
 	# shadows stay dark blue (the mesa's own colour); everything the sun touches goes gold
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
@@ -108,16 +111,16 @@ func build_environment() -> void:
 	# distance haze: layers the spires into paler and paler silhouettes; the valley below is a sea of it
 	env.fog_enabled = true
 	env.fog_mode = Environment.FOG_MODE_EXPONENTIAL
-	env.fog_light_color = Color(0.93, 0.9, 0.81)
+	env.fog_light_color = Color(0.94, 0.87, 0.76)      # the sky's horizon, so far shapes sink into it
 	env.fog_light_energy = 1.0
-	env.fog_sun_scatter = 0.15
+	env.fog_sun_scatter = 0.3                         # a gold bloom of haze round the sun
 	env.fog_density = 0.0032
 	env.fog_aerial_perspective = 0.2
-	env.fog_sky_affect = 0.55
+	env.fog_sky_affect = 0.15                         # the sky paints its own horizon haze
 	env.fog_height = 26.0
-	env.fog_height_density = 0.06
+	env.fog_height_density = 0.045
 	env.volumetric_fog_enabled = true
-	env.volumetric_fog_density = 0.002      # thin: near haze lit by the sun turned the blue rock tan
+	env.volumetric_fog_density = 0.0016     # thin: near haze lit by the sun turned the blue rock tan (and veiled the yard)
 	env.volumetric_fog_albedo = Color(0.94, 0.92, 0.85)
 	env.volumetric_fog_emission = Color(0.026, 0.025, 0.021)
 	env.volumetric_fog_emission_energy = 1.0
@@ -136,7 +139,7 @@ func build_environment() -> void:
 	sun.rotation_degrees = Vector3(-24, 55, 0)       # low in the east-south-east, behind the works from the landing
 	sun.light_color = Color(1.0, 0.703, 0.19)          # deep gold (tuned by hand in the editor)
 	sun.light_energy = 2.3
-	sun.light_volumetric_fog_energy = 2.0
+	sun.light_volumetric_fog_energy = 1.6
 	sun.light_angular_distance = 1.0
 	sun.shadow_enabled = true
 	sun.shadow_blur = 1.2
@@ -173,6 +176,7 @@ func build_environment() -> void:
 		var tm := mesa_material()
 		for s in mesa.mesh.get_surface_count():
 			mesa.set_surface_override_material(s, tm)
+			mesa.lod_bias = 128.0
 
 var _mesa_mat: ShaderMaterial
 
@@ -405,15 +409,7 @@ func spawn_marker(parent: Node, n: String, pos: Vector3, yaw: float) -> Marker3D
 
 func build_exits_and_spawns() -> void:
 	# (v8: stair 3 no longer links to the cavern - it has caved in; the lift is the only way)
-	# the silo roof, past the cove and the pinnacle: end of the line (for now)
-	var end := Area3D.new()
-	end.name = "Lookout"
-	end.set_script(load("res://scripts/exit_zone.gd"))
-	end.set("message", "THE COMPLEX\n— to be continued —")
-	var lk: Array = L["lookout"]
-	end.position = b2g([lk[0], lk[1], lk[2] + 1.2])
-	add(main_root, end)
-	box_shape(end, Vector3(8.0, 2.4, 4.0), Vector3.ZERO)
+	# (v11: the silo roof's "to be continued" Lookout banner is gone - SENTINEL-09 stands there now, see build_story())
 
 	# v9: the broken warden drone on the K-tower's top deck, east of the stair 2 -> gantry walk (x 57..59)
 	var drone := Area3D.new()
@@ -464,6 +460,54 @@ func omni(parent: Node, n: String, pos: Vector3, col: Color, energy: float, rng:
 	add(parent, l)
 	return l
 
+## v13: the Sphaeroid fight (scripts/boss_arena.gd + creatures/sphaeroid.gd). The arena needs the hall's floor
+## outline and the floor band under the gallery in Godot XZ; they come from v10_peak.py's BV / GAL / inset(),
+## mirrored here (hall-local, +X towards the mast, turned by hall_yaw about the hall centre).
+const HALL_BV := [Vector2(16.0, -6.0), Vector2(16.0, 6.0), Vector2(11.0, 12.0), Vector2(2.0, 13.5), Vector2(-6.0, 12.0),
+	Vector2(-13.0, 9.0), Vector2(-16.0, 2.0), Vector2(-15.0, -6.0), Vector2(-9.0, -12.0), Vector2(0.0, -13.0), Vector2(9.0, -11.0)]
+const HALL_GAL := [9, 10, 0, 1, 2]
+
+func _hall_inset(i: int, d: float) -> Vector2:
+	var n := HALL_BV.size()
+	var a: Vector2 = HALL_BV[(i - 1 + n) % n]
+	var b: Vector2 = HALL_BV[i % n]
+	var c: Vector2 = HALL_BV[(i + 1) % n]
+	var d1 := (b - a).normalized()
+	var d2 := (c - b).normalized()
+	var n1 := Vector2(-d1.y, d1.x)
+	var n2 := Vector2(-d2.y, d2.x)
+	var m := (n1 + n2).normalized()
+	return b + m * (d / maxf(0.3, m.dot(n1)))
+
+func _hall_to_godot(P: Dictionary, v: Vector2) -> Vector2:
+	var c: Array = P["hall"]["centre"]
+	var th := deg_to_rad(float(P["P10"]["hall_yaw"]))
+	var w := Vector2(float(c[0]) + v.x * cos(th) - v.y * sin(th), float(c[1]) + v.x * sin(th) + v.y * cos(th))
+	return Vector2(w.x, -w.y)
+
+func build_boss_fight(P: Dictionary, arena: Node3D) -> void:
+	var fight := Node3D.new()
+	fight.name = "BossFight"
+	fight.set_script(load("res://scripts/boss_arena.gd"))
+	add(arena, fight)
+	var floor_y := float(P["P10"]["ground"]) + 0.12
+	var poly := PackedVector2Array()
+	for i in HALL_BV.size():
+		poly.append(_hall_to_godot(P, _hall_inset(i, 1.0)))      # the inner wall line (walls are 1 m thick)
+	var quads := PackedVector2Array()
+	for i in HALL_GAL:
+		for v in [_hall_inset(i, 1.0), _hall_inset(i + 1, 1.0), _hall_inset(i + 1, 5.0), _hall_inset(i, 5.0)]:
+			quads.append(_hall_to_godot(P, v))
+	var gb: Array = P["hall"]["gates"]["BossGate-col"]["bottom"]
+	fight.set("floor_y", floor_y)
+	fight.set("hall_poly", poly)
+	fight.set("gallery_quads", quads)
+	fight.set("gate_point", b2g([gb[0], gb[1], floor_y]))
+	fight.set("boss_gate", NodePath("../BossGate"))
+	fight.set("exit_gate", NodePath("../ExitGate"))
+	fight.set("hidden_door", NodePath("../HiddenDoor"))
+	fight.set("spawn", NodePath("../BossSpawn"))
+
 func build_peak() -> void:
 	var P: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://art_src/peak.json"))
 	var peak := inst("res://assets/level/peak.glb", "Peak")
@@ -476,14 +520,16 @@ func build_peak() -> void:
 	var rock := peak.find_child("Peak", true, false) as MeshInstance3D
 	if rock:
 		for s in rock.mesh.get_surface_count():
+			rock.lod_bias = 128.0
 			rock.set_surface_override_material(s, mesa_material())
 
-	# the hall's moving parts (modelled closed). No boss yet: both shutters stand open. The fight should close
-	# BossGate behind the player, then set GameState "peak_boss_down" and open ExitGate + HiddenDoor.
+	# the hall's moving parts (modelled closed). BossGate stands open until the fight starts (boss_arena.gd drops it
+	# behind the player); ExitGate (to the mast) and HiddenDoor stay shut until the Sphaeroid is unpowered, which sets
+	# GameState "peak_boss_down" (then all three start open on every later visit).
 	var arena := group(main_root, "PeakArena")
 	var gates: Dictionary = P["hall"]["gates"]
 	for d in [["BossGate", Vector3(0, gates["BossGate-col"]["lift"], 0), true],
-			["ExitGate", Vector3(0, gates["ExitGate-col"]["lift"], 0), true],
+			["ExitGate", Vector3(0, gates["ExitGate-col"]["lift"], 0), false],
 			["HiddenDoor", Vector3(0, -2.75, 0), false]]:
 		var c := Node.new()
 		c.name = d[0]
@@ -493,12 +539,41 @@ func build_peak() -> void:
 		c.set("start_open", d[2])
 		c.set("open_flag", "peak_boss_down")
 		add(arena, c)
+	# v14: the Pennon on the annex plinth (pennon_pickup.gd; plinth top 1.05 m up, 84% of the way from the door to
+	# `inside`: v10_peak.py hall_annex), and a lamp under the annex's hanging shade
+	var ax: Dictionary = P["hall"]["annex"]
+	var ax_door := b2g(ax["door"])
+	var ax_in := b2g(ax["inside"])
+	var ax_out := Vector3(ax_in.x - ax_door.x, 0, ax_in.z - ax_door.z)
+	var pen := Area3D.new()
+	pen.name = "PennonPickup"
+	pen.set_script(load("res://scripts/pennon_pickup.gd"))
+	pen.position = Vector3(ax_door.x, ax_in.y, ax_door.z) + ax_out * 0.84 + Vector3(0, 1.05, 0)
+	pen.rotation.y = atan2(ax_out.x, ax_out.z)      # faces back out through the doorway
+	add(arena, pen)
+	# v15: the cable car station off the plateau's south-east rim (scripts/cable_station.gd loads
+	# assets/level/cable_station.glb + the car; art_src/v15_cable_station.py)
+	var cst := Node3D.new()
+	cst.name = "CableStation"
+	cst.set_script(load("res://scripts/cable_station.gd"))
+	add(main_root, cst)
+	var ax_lamp := OmniLight3D.new()
+	ax_lamp.name = "AnnexLamp"
+	ax_lamp.position = b2g(ax["lamp"]) + Vector3(0, -0.35, 0)
+	ax_lamp.light_color = Color(1.0, 0.78, 0.6)
+	ax_lamp.light_energy = 1.4
+	ax_lamp.omni_range = 5.0
+	ax_lamp.shadow_enabled = false
+	add(arena, ax_lamp)
 	var centre: Array = P["hall"]["centre"]
 	var boss := Marker3D.new()
 	boss.name = "BossSpawn"
 	boss.position = b2g(centre) + Vector3(0, 0.15, 0)
 	boss.add_to_group("boss_spawn", true)
+	var gb0: Array = gates["BossGate-col"]["bottom"]
+	boss.rotation.y = yaw_of([gb0[0] - centre[0], gb0[1] - centre[1]])     # it waits facing the entrance
 	add(arena, boss)
+	build_boss_fight(P, arena)
 
 	# ladders on the mast: the climber stands outside (climb_normal), the upper landing is in front at the top
 	var lads := group(main_root, "MastLadders")
@@ -603,3 +678,122 @@ func build_peak() -> void:
 	spawn_marker(spawns, "AtPeakBridge", b2g(app["start"]) + Vector3(0, 0.05, 0), rad_to_deg(yaw_of(app["dir"])))
 	var c1: Dictionary = P["mast"]["checkpoints"][0]
 	spawn_marker(spawns, "AtMast", b2g(c1["pos"]) + Vector3(0, 0.05, 0), rad_to_deg(yaw_of(c1["dir"])))
+
+# ------------------------------------------------------------------ v12: Patrol Station 4 at the head of the Peak bridge
+## The lift gate on the bridge's first stub opens for the sealed station pass (scripts/patrol_station.gd). Model and
+## layout: art_src/v12_station.py -> assets/props/patrol_station.glb + art_src/station.json (prop-local Blender coords:
+## origin on the deck centre at the gate line, +Y out along the bridge).
+func build_station() -> void:
+	var P: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://art_src/peak.json"))
+	var S: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://art_src/station.json"))
+	var app: Dictionary = P["approach"]
+	var st: Array = app["start"]
+	var ad: Array = app["dir"]
+	var s: float = S["s_gate"]
+	# arch1's deck runs from z0 - 0.4 at s = -6 up at `slope` (v10_peak.py approach())
+	var z: float = float(st[2]) - 0.4 + (s + 6.0) * float(S["slope"])
+	var root := Node3D.new()
+	root.name = "PatrolStation"
+	root.set_script(load("res://scripts/patrol_station.gd"))
+	root.position = b2g([float(st[0]) + float(ad[0]) * s, float(st[1]) + float(ad[1]) * s, z])
+	root.rotation.y = yaw_of(ad)
+	add(main_root, root)
+	var model := inst("res://assets/props/patrol_station.glb", "Model")
+	add(root, model)
+	main_root.set_editable_instance(model, true)
+	for b in model.find_children("*Guards*", "StaticBody3D", true, false):
+		(b as StaticBody3D).collision_layer = 16       # invisible walls: like the mesa's guards, not on the interact ray
+	for n in ["StatusLamp", "ReaderLamp", "BeaconLens"]:
+		var mi := model.find_child(n, true, false) as GeometryInstance3D
+		if mi:
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+	# the reader (interact) and the gate's collision, which patrol_station.gd lifts with the gate mesh
+	var rd: Array = S["reader"]
+	var reader := Area3D.new()
+	reader.name = "Reader"
+	reader.set_script(load("res://scripts/station_reader.gd"))
+	reader.position = b2g([rd[0], float(rd[1]) - 0.1, rd[2]])
+	add(root, reader)
+	box_shape(reader, Vector3(0.5, 0.6, 0.45), Vector3.ZERO)
+	var gb := AnimatableBody3D.new()
+	gb.name = "GateBody"
+	gb.sync_to_physics = true
+	gb.position = Vector3(0, float(S["gate_z"]) + float(S["gate_h"]) * 0.5, 0)
+	add(root, gb)
+	box_shape(gb, Vector3((float(S["post_x"]) - 0.1) * 2.0, float(S["gate_h"]), 0.3), Vector3.ZERO)
+
+	# lights (no shadows): lamp post, status lamp, booth glow, roof flood back up the approach, tip beacon
+	var lights := group(root, "Lights")
+	var warm := Color(1.0, 0.78, 0.52)
+	omni(lights, "GateLamp", b2g(S["lamp"]) - Vector3(0, 0.25, 0), warm, 1.8, 9.0)
+	omni(lights, "StatusLight", b2g(S["status"]) + Vector3(0, 0.1, 0), Color(1.0, 0.14, 0.07), 0.9, 3.5)
+	omni(lights, "BoothGlow", b2g(S["booth_glow"]), warm, 0.8, 3.6)
+	omni(lights, "Beacon", b2g(S["beacon"]) + Vector3(0, 0.1, 0), Color(1.0, 0.62, 0.16), 0.6, 4.5)
+	var fl: Array = S["flood"]
+	var flood := SpotLight3D.new()
+	flood.name = "Flood"
+	var fp := b2g([fl[0], float(fl[1]) - 0.1, fl[2]])
+	flood.transform = Transform3D(Basis.looking_at(Vector3(-0.25, -0.45, 1.0).normalized(), Vector3.UP), fp)
+	flood.light_color = Color(1.0, 0.9, 0.74)
+	flood.light_energy = 2.2
+	flood.spot_range = 18.0
+	flood.spot_angle = 30.0
+	flood.light_volumetric_fog_energy = 0.8
+	flood.shadow_enabled = false
+	add(lights, flood)
+
+# ------------------------------------------------------------------ v11: the silo watcher + loot crates
+## SENTINEL-09 on the silo roof: SENTINEL-07 (main.tscn, C deck) sends the player here. Dialogue: scripts/dialogue/
+## watcher_lines.gd. Loot: 16 supply crates (scripts/supply_crate.gd; assets/props/supply_crate.glb + parts_case.glb
+## from art_src/v11_crates.py), 5 with a voltaic core (the drone needs 3). Floor heights (Godot y) were probed with
+## tools/probe_points.gd; the spots keep clear of walk_test.gd's straight-line routes.
+const CRATES := [
+	# name, SC = supply crate / PC = parts case, Blender x, y, Godot floor y, yaw, loot
+	["LiftLanding", "SC", 26.5, -6.0, 34.28, 18.0, {"tokens": 12, "scrap": 2}],
+	["StairFoot", "PC", 44.5, 14.5, 34.35, -8.0, {"scrap": 3}],
+	["Gallery", "SC", 58.0, 23.0, 40.0, 172.0, {"tokens": 18, "bars": 1}],
+	["LinkDeck", "PC", 60.7, 2.0, 40.0, 90.0, {"tokens": 10, "scrap": 1}],
+	["TowerTop", "SC", 56.0, -10.3, 46.0, -96.0, {"tokens": 8, "scrap": 2}],
+	["BlockC", "SC", 64.5, -29.0, 46.0, 200.0, {"voltaic_core": 1, "tokens": 6}],
+	["Pinnacle", "PC", 70.8, -56.1, 46.0, 184.0, {"voltaic_core": 1, "scrap": 2}],
+	["SiloLanding", "SC", 97.0, -58.5, 46.0, 75.0, {"tokens": 15, "bars": 1}],
+	["SiloRoof", "PC", 91.2, -48.6, 56.0, 30.0, {"tokens": 22}],
+	["PumpHouse", "PC", 95.3, 14.6, 34.29, 4.0, {"voltaic_core": 1, "tokens": 5}],
+	["WaterTower", "SC", 9.5, 48.0, 34.29, 40.0, {"scrap": 3, "bars": 1}],
+	["FrameRuin", "SC", -35.0, 3.0, 34.27, -20.0, {"voltaic_core": 1, "scrap": 1}],
+	["TowerBlock", "PC", -24.0, 31.0, 34.43, 135.0, {"tokens": 14, "bars": 1}],
+	["Bunker", "SC", 40.0, -10.0, 34.32, 66.0, {"scrap": 2, "tokens": 7}],
+	["Pylon", "PC", -6.5, -44.5, 34.30, -150.0, {"voltaic_core": 1, "tokens": 4}],
+	["PipeRun", "PC", 75.0, 20.0, 34.31, 12.0, {"scrap": 4}],
+]
+
+func build_story() -> void:
+	var w := Node3D.new()
+	w.name = "SiloWatcher"
+	w.set_script(load("res://scripts/creatures/watcher.gd"))
+	w.position = b2g([95.0, -47.5, 56.0])         # between the roof tank and the dish, facing the stair (north)
+	add(main_root, w)
+	add(w, inst("res://assets/creatures/watcher.glb", "Model"))
+	var talk := Area3D.new()
+	talk.name = "Talk"
+	talk.set_script(load("res://scripts/watcher_talk.gd"))
+	talk.set("tree_id", "sentinel_09")
+	talk.set("speaker", "SENTINEL-09")
+	add(w, talk)
+	box_shape(talk, Vector3(1.3, 1.4, 1.3), Vector3(0, 0.5, 0))
+
+	var loot := group(main_root, "Loot")
+	for c in CRATES:
+		var sc: bool = c[1] == "SC"
+		var cr := StaticBody3D.new()
+		cr.name = "Crate_" + str(c[0])
+		cr.set_script(load("res://scripts/supply_crate.gd"))
+		cr.position = Vector3(c[2], c[4], -float(c[3]))
+		cr.rotation_degrees = Vector3(0, c[5], 0)
+		var contents: Dictionary = c[6]
+		for k in contents:
+			cr.set(k, contents[k])
+		add(loot, cr)
+		add(cr, inst("res://assets/props/%s.glb" % ("supply_crate" if sc else "parts_case"), "Model"))
+		box_shape(cr, Vector3(0.84, 0.5, 0.54) if sc else Vector3(0.68, 0.34, 0.44), Vector3(0, 0.25 if sc else 0.17, 0))

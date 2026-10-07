@@ -7,7 +7,7 @@
 # Built in Blender scene "Props9" (collection DRONE9); Y forward, Z up. Parts (separate nodes, origins at their pivots):
 #   DBody, DCore (core + lens, emissive), DRing (spins), DWing_L / DWing_R (hinged at the body).
 # Run: exec(open(r"...\art_src\v9_drone.py").read()); build_drone()  then, with Props9 active, export_drone()
-exec(open(r"C:\Users\Pigeon\Documents\UnderworksCavern\art_src\gen_lib.py").read())
+exec(open(r"D:\Emberlight\art_src\gen_lib.py").read())
 
 if "Props9" not in bpy.data.scenes:
     bpy.data.scenes.new("Props9")

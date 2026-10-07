@@ -15,6 +15,7 @@ var _pitch := 0.0
 var _alert := 0.0
 var _player: Node3D
 var _scan_speed := 0.35
+var talking := false        # set by its watcher_talk.gd child: lock onto the player and flicker the lens as it speaks
 
 func _ready() -> void:
 	_t = randf() * 20.0
@@ -54,7 +55,9 @@ func _physics_process(delta: float) -> void:
 	if _player:
 		tgt = _player.global_position + Vector3.UP * 1.5
 		var eye := _head.global_position
-		if eye.distance_to(tgt) < sight_range:
+		if talking:
+			tracking = true
+		elif eye.distance_to(tgt) < sight_range:
 			var q := PhysicsRayQueryParameters3D.create(eye, tgt, 1)
 			q.exclude = [_player.get_rid()]
 			tracking = get_world_3d().direct_space_state.intersect_ray(q).is_empty()
@@ -80,3 +83,5 @@ func _physics_process(delta: float) -> void:
 		_spot.spot_angle = lerpf(9.0, 6.0, _alert)
 	if _lens_mat:
 		_lens_mat.emission_energy_multiplier = lerpf(4.0, 14.0, _alert) * (1.0 if _alert < 0.9 or fmod(_t, 0.4) < 0.3 else 0.5)
+		if talking:
+			_lens_mat.emission_energy_multiplier *= randf_range(0.55, 1.15)

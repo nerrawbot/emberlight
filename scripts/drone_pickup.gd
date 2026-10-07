@@ -1,10 +1,20 @@
 extends "res://scripts/interactable.gd"
-## The broken warden drone on the K-tower's top deck (surface.tscn). [E] with a repair kit (player.use_item, a
-## placeholder item - you start with one): it rights itself, lifts off and joins the player (player.give_drone()).
+## The broken warden drone on the K-tower's top deck (surface.tscn). It needs CORES_NEEDED voltaic cores (found in
+## supply crates, scripts/supply_crate.gd). Without them, [E] only gives a vague thought and sets GameState
+## "drone_inspected", which opens the drone topic with the silo watcher (SENTINEL-09, watcher_lines.gd). With them:
+## it rights itself, lifts off and joins the player (player.give_drone()).
 ## Children: Model (drone.glb), CollisionShape3D. Sparks + the flickering light are made here.
 ## Gone for good once repaired (GameState "has_drone").
 
 const GameState := preload("res://scripts/game_state.gd")
+const CORES_NEEDED := 3
+const THOUGHTS := [
+	"Its core housing is dark. Something could still power it... maybe.",
+	"Three empty sockets round the core. Whatever sat in them burnt out long ago.",
+	"It twitches under your hand. Not dead. Not quite.",
+]
+
+var _thought := 0
 
 var _model: Node3D
 var _wl: Node3D
@@ -94,9 +104,9 @@ func get_prompt() -> String:
 	if _repairing:
 		return ""
 	var p := get_tree().get_first_node_in_group("player")
-	if p and p.has_method("item_count") and p.item_count("repair_kit") > 0:
-		return "Repair the broken drone  (use a repair kit: %d)" % p.item_count("repair_kit")
-	return "A broken drone. It needs a repair kit."
+	if p and p.has_method("item_count") and p.item_count("voltaic_core") >= CORES_NEEDED:
+		return "Seat %d voltaic cores in the drone" % CORES_NEEDED
+	return "Inspect the broken drone"
 
 func _process(delta: float) -> void:
 	if _model == null:
@@ -128,13 +138,20 @@ func _on_interact(by: Node) -> void:
 		return
 	if not (by.has_method("use_item") and by.has_method("give_drone")):
 		return
-	if not by.use_item("repair_kit"):
+	var have: int = by.item_count("voltaic_core") if by.has_method("item_count") else 0
+	if have < CORES_NEEDED or not by.use_item("voltaic_core", CORES_NEEDED):
+		GameState.set_value("drone_inspected", true)
+		var msg: String = THOUGHTS[_thought % THOUGHTS.size()]
+		_thought += 1
+		if have > 0:
+			msg = "A voltaic core fits one socket. The core flickers, then dies. It needs more.  (%d/%d)" % [have, CORES_NEEDED]
 		if by.has_method("show_toast"):
-			by.show_toast("Its core still flickers. You'd need parts to fix it.")
+			by.show_toast(msg, 3.4)
+		_sparks.restart()
 		return
 	_repairing = true
 	if by.has_method("show_toast"):
-		by.show_toast("You patch the drone together...", 1.6)
+		by.show_toast("You seat the cores. The drone shudders awake...", 1.8)
 	_sparks.amount = 30
 	_sparks.restart()
 	if _core_mat:

@@ -7,7 +7,7 @@
 #
 # Run in Blender: exec(open(r"...\art_src\v6_textures.py").read()); grade_all()
 import bpy, numpy as np, os
-TEX = r"C:\Users\Pigeon\Documents\UnderworksCavern\art_src\tex"
+TEX = r"D:\Emberlight\art_src\tex"
 
 GRADES = [   # (poly haven id, out name, dark, light, keep chroma, gamma)
     ("gravel_stones", "mesa_gravel", (0.09, 0.095, 0.115), (0.58, 0.58, 0.62), 0.15, 0.85),

@@ -3,7 +3,7 @@
 # Run inside Blender (Scene "Scene"). Re-runnable: it removes previous V3 objects first,
 # but the rock/surface carve and island removal are destructive, so run it on a fresh copy
 # of art_src/backup/cavern_pre_v3.blend if you need to redo it.
-exec(open(r"C:\Users\Pigeon\Documents\UnderworksCavern\art_src\gen_lib.py").read())
+exec(open(r"D:\Emberlight\art_src\gen_lib.py").read())
 sc = bpy.data.scenes["Scene"]
 bpy.context.window.scene = sc
 
@@ -199,7 +199,7 @@ def build_tunnel():
 
 # ---------------------------------------------------------------- moving props: sheave + stair gate
 def build_props3():
-    exec(open(r"C:\Users\Pigeon\Documents\UnderworksCavern\art_src\v2_creatures.py").read().split("T=\"TMP\"")[0], globals())
+    exec(open(r"D:\Emberlight\art_src\v2_creatures.py").read().split("T=\"TMP\"")[0], globals())
     T = "TMP"
     def sheave():
         r = SHEAVE_R

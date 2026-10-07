@@ -9,6 +9,7 @@ const GameState := preload("res://scripts/game_state.gd")
 const SHAFT_MODEL := "res://assets/props/shaft.glb"
 const MINIMAP := preload("res://scripts/minimap.gd")
 const BANNER_FONT := preload("res://assets/fonts/Cinzel-Variable.ttf")
+const Items := preload("res://scripts/items.gd")
 ## View-model pose of the shaft (camera space): grip low on the right, head leaning in from the upper right.
 const SHAFT_REST_POS := Vector3(0.42, -0.56, -0.5)
 const SHAFT_REST_ROT := Vector3(-46.0, -8.0, 6.0)
@@ -18,6 +19,8 @@ signal health_changed(value: float, max_value: float)
 signal respawned(at: Vector3, from_health: bool)
 ## The drone's shield (HUD/ShieldArc). `has`: the player has a working drone.
 signal shield_changed(value: float, max_value: float, block: float, has: bool)
+## Tokens / materials changed (add_item, use_item).
+signal inventory_changed
 
 @export var walk_speed := 3.8
 @export var jump_velocity := 5.2
@@ -100,6 +103,36 @@ var _hurt_tween: Tween
 var _trauma := 0.0          # screen shake, 0..1 (offset/roll grow with its square)
 var _shake_t := 0.0
 var _shake_noise := FastNoiseLite.new()
+var _dialogue: Control      # v11 HUD extras, added at runtime (_add_hud_extras)
+var _inventory: Control
+var _feed: Control
+var _talker: Node
+## Set by boss_arena.gd during a boss fight: blacking out sends you back to the last checkpoint (outside the arena)
+## instead of the nearest respawn point (the lift landing on the surface).
+var death_to_checkpoint := false
+## Debug console (scripts/debug_console.gd) `god`: take_damage does nothing.
+var god := false
+
+## v14: the Pennon (pennon_pickup.gd). [Space] in mid-air, with at least glide_min_height of air below (so never
+## straight out of a jump on flat ground), opens it; [Space] again folds it. Steer by looking: level it sinks
+## slowly and speeds up towards dash speed; looking down dives (faster, sinks harder), looking up bleeds speed.
+## It folds on landing, on a ladder, or after flying into a wall. Gliding never counts as a fall.
+@export var glide_min_height := 3.0
+@export var glide_sink := 1.7         # m/s, level
+@export var glide_dive_sink := 5.0    # extra m/s looking straight down
+@export var glide_accel := 6.0        # m/s^2 towards the glide speed (dash_speed)
+@export var glide_fov := 14.0         # degrees added at full glide speed
+const PennonModel := preload("res://scripts/pennon_model.gd")
+const WING_POS := Vector3(0, -0.42, -0.55)    # the grip, camera-local, low in view; the blade rides overhead
+const WING_ROT := Vector3(0.16, 0, 0)         # tipped back: only its leading edge shows at the top
+var has_pennon := false
+var gliding := false
+var _glide_v := 0.0
+var _glide_t := 0.0
+var _wing: Node3D
+var _wing_tw: Tween
+var _fov_tw: Tween
+var _base_fov := 75.0
 
 const ACTIONS := {
 	"move_forward": [KEY_W, KEY_UP],
@@ -112,6 +145,7 @@ const ACTIONS := {
 	"interact": [KEY_E],
 	"toggle_lantern": [KEY_F],
 	"toggle_map": [KEY_M],
+	"toggle_inventory": [KEY_I],
 }
 
 func _ready() -> void:
@@ -132,13 +166,21 @@ func _ready() -> void:
 	if has_weapon:
 		_make_stick()
 	has_drone = GameState.get_value("has_drone", false)
+	has_pennon = GameState.get_value("has_pennon", false)
+	_base_fov = camera.fov
 	shield = clampf(GameState.get_value("shield", shield_max), 0.0, shield_max) if has_drone else 0.0
 	_add_shield_arc()
 	if has_drone:
 		_spawn_drone.call_deferred(null)
 	_emit_shield.call_deferred()
 	_add_minimap()
+	_add_hud_extras()
 	_style_banner()
+	var dc := CanvasLayer.new()
+	dc.name = "DebugConsole"
+	dc.set_script(load("res://scripts/debug_console.gd"))
+	dc.set("player", self)
+	add_child(dc)
 	var root := get_tree().root
 	if root.has_meta("spawn_point"):
 		var sp := str(root.get_meta("spawn_point"))
@@ -259,6 +301,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		lantern.visible = not lantern.visible
 	elif event.is_action_pressed("interact"):
 		try_interact()
+	elif event.is_action_pressed("toggle_inventory") and _inventory:
+		_inventory.call("toggle")
 
 func try_interact() -> bool:
 	var target := _get_interactable()
@@ -282,11 +326,21 @@ func _physics_process(delta: float) -> void:
 		_jump_buf = maxf(0.0, _jump_buf - delta)
 
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	if Input.is_action_just_pressed("jump") and has_pennon and not is_on_floor() and not is_on_ladder():
+		if gliding:
+			_end_glide()
+			_jump_buf = 0.0
+		elif _coyote <= 0.0 and _dash_t <= 0.0 and _glide_clearance():
+			_start_glide()
+			_jump_buf = 0.0
 	var climbed := false
-	if is_on_ladder():
-		climbed = _ladder_physics(input_dir)
-	if not climbed:
-		_ground_physics(delta, input_dir)
+	if gliding:
+		_glide_physics(delta, input_dir)
+	else:
+		if is_on_ladder():
+			climbed = _ladder_physics(input_dir)
+		if not climbed:
+			_ground_physics(delta, input_dir)
 
 	var hspeed := Vector2(velocity.x, velocity.z).length()
 	if is_on_floor() and hspeed > 0.5:
@@ -377,7 +431,7 @@ func _set_health(v: float) -> void:
 ## Hurt the player (falls, hazards, enemies). Shakes the view; `knock` shoves them (enemy hits).
 ## At 0 they collapse and come round at the nearest respawn point (or the last checkpoint where there is none).
 func take_damage(amount: float, msg := "", knock := Vector3.ZERO) -> void:
-	if _dying or amount <= 0.0:
+	if _dying or amount <= 0.0 or god:
 		return
 	if has_drone and shield > 0.0:        # the drone's shield soaks it first
 		var soak := minf(shield, amount)
@@ -403,7 +457,7 @@ func take_damage(amount: float, msg := "", knock := Vector3.ZERO) -> void:
 		velocity += knock
 		_dash_t = 0.0
 	if health <= 0.0:
-		var to_point := not get_tree().get_nodes_in_group("respawn_point").is_empty()
+		var to_point := not death_to_checkpoint and not get_tree().get_nodes_in_group("respawn_point").is_empty()
 		die("You black out... and come round by the lift." if to_point else "You black out... and come round further back.", to_point)
 	elif msg != "":
 		show_toast(msg)
@@ -472,19 +526,70 @@ func give_drone(from: Variant = null) -> void:
 	_spawn_drone(from)
 	_set_shield(shield_max)
 
-## Inventory placeholder (GameState "items"): repair parts etc. Starts with one repair kit.
+# ---------------------------------------------------------------- v11: inventory (GameState "items": {id: count})
+## Ids are in scripts/items.gd: "tokens" (currency), "station_pass_sealed" (key), "station_pass" (valuable),
+## "scrap", "bars", "voltaic_core" (materials).
 func item_count(id: String) -> int:
-	var items: Dictionary = GameState.get_value("items", {"repair_kit": 1})
+	var items: Dictionary = GameState.get_value("items", {})
 	return int(items.get(id, 0))
 
-func use_item(id: String) -> bool:
-	var items: Dictionary = GameState.get_value("items", {"repair_kit": 1})
-	var n := int(items.get(id, 0))
+## Add `n` of an item; shows "+n Name" in the pickup feed unless `quiet`.
+func add_item(id: String, n := 1, quiet := false) -> void:
 	if n <= 0:
-		return false
-	items[id] = n - 1
+		return
+	var items: Dictionary = GameState.get_value("items", {})
+	items[id] = int(items.get(id, 0)) + n
 	GameState.set_value("items", items)
+	if not quiet and _feed:
+		_feed.call("push", "+%d  %s" % [n, Items.label(id, n)], Items.color(id))
+	inventory_changed.emit()
+	if _inventory and _inventory.visible:
+		_inventory.call("refresh")
+
+## Spend `n` of an item; false (and nothing spent) if there aren't enough.
+func use_item(id: String, n := 1) -> bool:
+	var items: Dictionary = GameState.get_value("items", {})
+	var have := int(items.get(id, 0))
+	if have < n:
+		return false
+	items[id] = have - n
+	GameState.set_value("items", items)
+	inventory_changed.emit()
 	return true
+
+## Pickup feed (right edge), [I] inventory panel and the watcher dialogue box; under the hurt flash and fade.
+func _add_hud_extras() -> void:
+	if has_node("HUD/Dialogue"):
+		return
+	var at := hurt_flash.get_index() if hurt_flash else $HUD.get_child_count()
+	_feed = load("res://scripts/pickup_feed.gd").new()
+	_inventory = load("res://scripts/inventory_panel.gd").new()
+	_inventory.set("player", self)
+	_dialogue = load("res://scripts/dialogue_box.gd").new()
+	_dialogue.connect("finished", _on_dialogue_finished)
+	for c in [_feed, _inventory, _dialogue]:
+		$HUD.add_child(c)
+		$HUD.move_child(c, at)
+		at += 1
+
+## Talk to a watcher (watcher_talk.gd): movement and look stop until the box closes; `talker.end_talk()` then.
+func start_dialogue(tree_id: String, speaker: String, talker: Node = null) -> void:
+	if _dialogue == null or _dialogue.get("active"):
+		return
+	_talker = talker
+	input_enabled = false
+	velocity = Vector3.ZERO
+	prompt.text = ""
+	if _inventory:
+		_inventory.call("close")       # also unpauses
+	_dialogue.call("start", tree_id, speaker)
+
+func _on_dialogue_finished() -> void:
+	if _talker and is_instance_valid(_talker) and _talker.has_method("end_talk"):
+		_talker.call("end_talk")
+	_talker = null
+	# a beat before control returns, so the Space that closed the box isn't read as a jump
+	get_tree().create_timer(0.12).timeout.connect(func(): input_enabled = true)
 
 func _ladder_physics(input_dir: Vector2) -> bool:
 	var ladder: Node = _ladders.back()
@@ -542,9 +647,94 @@ func _ground_physics(delta: float, input_dir: Vector2) -> void:
 	move_and_slide()
 	_push_bodies(delta)
 
+# ---------------------------------------------------------------- v14: gliding (the Pennon)
+## Taken from the annex plinth (pennon_pickup.gd).
+func give_pennon() -> void:
+	has_pennon = true
+	GameState.set_value("has_pennon", true)
+
+## Enough air below to open it.
+func _glide_clearance() -> bool:
+	var q := PhysicsRayQueryParameters3D.create(global_position, global_position + Vector3.DOWN * glide_min_height,
+		collision_mask, [get_rid()])
+	return get_world_3d().direct_space_state.intersect_ray(q).is_empty()
+
+func _start_glide() -> void:
+	gliding = true
+	_glide_t = 0.0
+	_glide_v = Vector2(velocity.x, velocity.z).length()
+	_dash_t = 0.0
+	if _stick:
+		_stick.visible = false
+	if _wing == null:
+		_wing = PennonModel.make(true)
+		_wing.name = "Pennon"
+		_wing.scale = Vector3.ONE * 1.1
+		camera.add_child(_wing)
+	_wing.visible = true
+	# unfurls: swings up from below the view and snaps open
+	_wing.position = WING_POS + Vector3(0, -0.6, 0.15)
+	_wing.rotation = WING_ROT + Vector3(0.9, 0, 0.3)
+	if _wing_tw:
+		_wing_tw.kill()
+	_wing_tw = create_tween().set_parallel()
+	_wing_tw.tween_property(_wing, "position", WING_POS, 0.26).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_wing_tw.tween_property(_wing, "rotation", WING_ROT, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	shake(0.12)
+
+func _end_glide() -> void:
+	if not gliding:
+		return
+	gliding = false
+	head.rotation.z = 0.0
+	if _wing:
+		if _wing_tw:
+			_wing_tw.kill()
+		_wing_tw = create_tween().set_parallel()
+		_wing_tw.tween_property(_wing, "position", WING_POS + Vector3(0, -0.7, 0.2), 0.2).set_ease(Tween.EASE_IN)
+		_wing_tw.tween_property(_wing, "rotation", WING_ROT + Vector3(0.9, 0, -0.2), 0.2)
+		_wing_tw.chain().tween_callback(func():
+			_wing.visible = false
+			if _stick:
+				_stick.visible = true)
+	if _fov_tw:
+		_fov_tw.kill()
+	_fov_tw = create_tween()
+	_fov_tw.tween_property(camera, "fov", _base_fov, 0.35)
+
+func _glide_physics(delta: float, input_dir: Vector2) -> void:
+	_glide_t += delta
+	var pitch := head.rotation.x                  # + looking up, - down
+	var down := clampf(-pitch / 1.2, 0.0, 1.0)
+	var up := clampf(pitch / 1.2, 0.0, 1.0)
+	var target := dash_speed * (1.0 + 0.35 * down - 0.55 * up)
+	_glide_v = move_toward(_glide_v, target, glide_accel * delta * (1.0 if _glide_v < target else 0.6))
+	var want := -transform.basis.z * _glide_v + transform.basis.x * input_dir.x * 2.0
+	var k := clampf(delta * 3.0, 0.0, 1.0)
+	velocity.x = lerpf(velocity.x, want.x, k)
+	velocity.z = lerpf(velocity.z, want.z, k)
+	var sink := glide_sink + glide_dive_sink * down * down - glide_sink * 0.4 * up
+	velocity.y = move_toward(velocity.y, -sink, delta * 12.0)     # catches a fall quickly, then settles
+	_fall_top = global_position.y                                 # a glide is never a fall
+	_airborne = false
+	move_and_slide()
+	if is_on_floor() or is_on_ladder():
+		_end_glide()
+		return
+	if is_on_wall() and _glide_t > 0.3 and get_wall_normal().dot(-transform.basis.z) < -0.75:
+		_end_glide()                                              # flew head-on into a wall (glancing ones slide)
+		_glide_v = 0.0
+		return
+	# wider view with speed, a little lean into turns
+	camera.fov = lerpf(camera.fov, _base_fov + glide_fov * clampf(_glide_v / dash_speed, 0.0, 1.2), clampf(delta * 4.0, 0.0, 1.0))
+	head.rotation.z = lerpf(head.rotation.z, -input_dir.x * 0.06, clampf(delta * 5.0, 0.0, 1.0))
+	if _wing:
+		_wing.rotation.z = lerpf(_wing.rotation.z, -input_dir.x * 0.18 + sin(_glide_t * 2.3) * 0.025, clampf(delta * 6.0, 0.0, 1.0))
+		_wing.position.y = WING_POS.y + sin(_glide_t * 3.1) * 0.012 if not (_wing_tw and _wing_tw.is_running()) else _wing.position.y
+
 # ---------------------------------------------------------------- dash + stick
 func dash() -> void:
-	if not input_enabled or _dash_cd > 0.0 or is_on_ladder() or (not is_on_floor() and not _air_dash):
+	if not input_enabled or gliding or _dash_cd > 0.0 or is_on_ladder() or (not is_on_floor() and not _air_dash):
 		return
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	if input_dir == Vector2.ZERO:
@@ -599,7 +789,7 @@ func give_weapon(quiet := false) -> void:
 
 ## Swing the shaft: short-range box check in front of the player. Needs the weapon.
 func attack() -> bool:
-	if not input_enabled or _attack_cd > 0.0 or not has_weapon:
+	if not input_enabled or _attack_cd > 0.0 or not has_weapon or gliding:
 		return false
 	_attack_cd = attack_cooldown
 	if _stick == null:
@@ -691,13 +881,14 @@ func _update_prompt() -> void:
 	var t := _get_interactable()
 	if t:
 		var txt: String = t.call("get_prompt") if t.has_method("get_prompt") else str(t.get("prompt_text"))
-		prompt.text = "[E]  " + txt
+		prompt.text = "[E]  " + txt if txt != "" else ""
 	elif is_on_ladder() and not is_on_floor():
 		prompt.text = "W / S  climb      Space  let go"
 	else:
 		prompt.text = ""
 
 func respawn() -> void:
+	_end_glide()
 	global_transform = spawn_transform
 	velocity = Vector3.ZERO
 

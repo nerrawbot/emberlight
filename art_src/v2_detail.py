@@ -1,5 +1,5 @@
 
-exec(open(r"C:\Users\Pigeon\Documents\UnderworksCavern\art_src\gen_lib.py").read())
+exec(open(r"D:\Emberlight\art_src\gen_lib.py").read())
 from mathutils import Euler
 import json
 S2="S2"; D2="D2"; L2="Lamps2"; W2="Water"
