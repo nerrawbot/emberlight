@@ -10,6 +10,7 @@ const SHAFT_MODEL := "res://assets/props/shaft.glb"
 const MINIMAP := preload("res://scripts/minimap.gd")
 const BANNER_FONT := preload("res://assets/fonts/Cinzel-Variable.ttf")
 const Items := preload("res://scripts/items.gd")
+const GraphicsSettings := preload("res://scripts/graphics_settings.gd")
 ## View-model pose of the shaft (camera space): grip low on the right, head leaning in from the upper right.
 const SHAFT_REST_POS := Vector3(0.42, -0.56, -0.5)
 const SHAFT_REST_ROT := Vector3(-46.0, -8.0, 6.0)
@@ -180,6 +181,7 @@ func _ready() -> void:
 	_emit_shield.call_deferred()
 	_add_minimap()
 	_add_hud_extras()
+	GraphicsSettings.apply.call_deferred(self)
 	_style_banner()
 	var dc := CanvasLayer.new()
 	dc.name = "DebugConsole"
@@ -301,7 +303,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("dash"):
 		dash()
 	elif event.is_action_pressed("ui_cancel"):
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		if _inventory:
+			_inventory.call("open")     # Esc opens the [I] menu (pause + graphics preset)
+		else:
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	elif event.is_action_pressed("toggle_lantern"):
 		lantern.visible = not lantern.visible
 	elif event.is_action_pressed("interact"):
