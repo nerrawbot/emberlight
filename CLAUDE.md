@@ -50,10 +50,10 @@ Region: Forsaken Debris. The Heretic is the mountain.
 - **Dialogue**: `watcher_talk.gd` -> `player.start_dialogue()` -> `dialogue_box.gd`; lines in `scripts/dialogue/watcher_lines.gd` (`need`/`need_not` test GameState; `{braces}` = corrupted text). SENTINEL-07 in main (hand-added Talk node), SENTINEL-09 in surface.
 - **Drone**: repairing needs 3 voltaic cores (`drone_pickup.gd`); `drone_companion.gd` orbits the player and powers the shield.
 - **Enemies**: `scuttler.gd`, `moth.gd`, `watcher.gd`, `enemy_spawner.gd` (counts kills; kill #6 drops the sealed station pass, later kills 7.5% for plain passes; `no_spawn` circles, `min_ground_y`). Boss `creatures/sphaeroid.gd` (1500 HP, strafes, hops back before cannon volleys, leap/roll/skates, phase 2 at 50%, `boss_arena.gd` runs the fight; arena resets on death). Painterly look: `creatures/painterly.gdshader` + `assets/creatures/sph_paint_*.png`, swapped in at runtime (`_paint_model()`), not in the glb. Player-blocking body = `Solid` AnimatableBody (layer 16) with `sync_to_physics = false` (with it on, it doesn't follow the moving parent).
+- **Graphics presets** (`graphics_settings.gd`): Low/Medium/High buttons in the I/Esc menu footer, saved to `user://settings.cfg`, applied by player.gd on each scene start (skipped headless). High = authored look. Never shorten the sun's shadow distance: in the caverns the rock overhead is what blocks it.
 - **Perf**: shadows on haze fills off, shadow distance fade 28 m, shadow atlas 4096, fog volume 80, distant scuttlers think at 1/4 rate. Cavern ~13 ms, surface ~11 ms GPU (Arc A380, 1600x900).
 
 ## Ideas / not done
-- Low/Medium quality preset (sun shadow, MSAA, SSR, fog are the remaining cost).
 - Unpowered cavern floor is very dark; tune `LowMist` and `off_energy` in build_main.gd (hand-edit main.tscn).
 - Sheave hanger blocks on the headframe look bulky (`build_lift3`).
 - Nothing but falls hurts the player yet (steam vents, creatures could use `take_damage`). No audio yet.

@@ -1,6 +1,7 @@
 extends Control
 ## [I] inventory (v12 layout). Added to the HUD at runtime by player.gd (_add_hud_extras()). Opening it pauses the
-## game (the tree is paused; this panel runs with PROCESS_MODE_ALWAYS) and frees the mouse; I or Esc closes it.
+## game (the tree is paused; this panel runs with PROCESS_MODE_ALWAYS) and frees the mouse; I or Esc opens/closes it.
+## The footer holds the graphics preset buttons (scripts/graphics_settings.gd).
 ##   header      title + tokens
 ##   left        EQUIPMENT: the weapon, the companion (cards)
 ##   middle      slot grids: KEY ITEMS, VALUABLES, MATERIALS (scripts/items.gd sections)
@@ -9,6 +10,7 @@ extends Control
 ## Select with the mouse (hover / click) or the arrow keys / WASD.
 
 const Items := preload("res://scripts/items.gd")
+const GraphicsSettings := preload("res://scripts/graphics_settings.gd")
 const TITLE_FONT := preload("res://assets/fonts/Cinzel-Variable.ttf")
 
 const PANEL_SIZE := Vector2(1120, 660)
@@ -31,6 +33,7 @@ var _detail_count: Label
 var _detail_desc: Label
 var _slots: Array[Slot] = []
 var _sel_key := ""
+var _gfx_buttons: Array[Button] = []
 
 # ---------------------------------------------------------------- the icon tile (placeholder art)
 class IconTile extends Control:
@@ -226,9 +229,18 @@ func _ready() -> void:
 	root.add_child(_rule(false))
 	var foot := HBoxContainer.new()
 	root.add_child(foot)
+	foot.add_theme_constant_override("separation", 6)
 	var hint := _label("Mouse / arrows  select        [I] / Esc  close", 15, DIM_TEXT)
 	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	foot.add_child(hint)
+	var gl := _heading("GRAPHICS")
+	gl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	foot.add_child(gl)
+	for i in GraphicsSettings.NAMES.size():
+		foot.add_child(_gfx_button(i))
+	var spacer := _gap(0)
+	spacer.custom_minimum_size.x = 24
+	foot.add_child(spacer)
 	var paused := _label("PAUSED", 15, Color(ACCENT, 0.9))
 	paused.add_theme_font_override("font", _title_font)
 	foot.add_child(paused)
@@ -247,6 +259,7 @@ func open() -> void:
 	_was_paused = get_tree().paused
 	get_tree().paused = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	_restyle_gfx()
 	refresh()
 
 func close() -> void:
@@ -418,6 +431,35 @@ func _step(d: int) -> void:
 		if _slots[k].key == _sel_key:
 			i = k
 	_select(_slots[wrapi(i + d, 0, _slots.size())])
+
+# ---------------------------------------------------------------- graphics preset buttons
+func _gfx_button(i: int) -> Button:
+	var b := Button.new()
+	b.text = GraphicsSettings.NAMES[i].to_upper()
+	b.focus_mode = Control.FOCUS_NONE
+	b.custom_minimum_size = Vector2(78, 0)
+	b.add_theme_font_override("font", _title_font)
+	b.add_theme_font_size_override("font_size", 13)
+	b.pressed.connect(func():
+		GraphicsSettings.set_preset(i, self)
+		_restyle_gfx())
+	_gfx_buttons.append(b)
+	return b
+
+func _restyle_gfx() -> void:
+	var cur := GraphicsSettings.get_preset()
+	for i in _gfx_buttons.size():
+		var on := i == cur
+		for st in ["normal", "hover", "pressed"]:
+			var sb := StyleBoxFlat.new()
+			sb.bg_color = Color(ACCENT.darkened(0.6), 0.7) if on else Color(1, 1, 1, 0.07 if st == "hover" else 0.0)
+			sb.border_color = Color(ACCENT, 0.9) if on else Color(1, 1, 1, 0.12)
+			sb.set_border_width_all(1)
+			sb.set_corner_radius_all(4)
+			sb.set_content_margin_all(5)
+			_gfx_buttons[i].add_theme_stylebox_override(st, sb)
+		for st in ["font_color", "font_hover_color", "font_pressed_color"]:
+			_gfx_buttons[i].add_theme_color_override(st, Color(0.92, 0.91, 0.88) if on else DIM_TEXT)
 
 # ---------------------------------------------------------------- small widgets
 func _count(id: String) -> int:

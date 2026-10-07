@@ -10,6 +10,7 @@ const SHAFT_MODEL := "res://assets/props/shaft.glb"
 const MINIMAP := preload("res://scripts/minimap.gd")
 const BANNER_FONT := preload("res://assets/fonts/Cinzel-Variable.ttf")
 const Items := preload("res://scripts/items.gd")
+const GraphicsSettings := preload("res://scripts/graphics_settings.gd")
 ## View-model pose of the shaft (camera space): grip low on the right, head leaning in from the upper right.
 const SHAFT_REST_POS := Vector3(0.42, -0.56, -0.5)
 const SHAFT_REST_ROT := Vector3(-46.0, -8.0, 6.0)
@@ -112,6 +113,11 @@ var _talker: Node
 var death_to_checkpoint := false
 ## Debug console (scripts/debug_console.gd) `god`: take_damage does nothing.
 var god := false
+## Debug console `fly` / `noclip`: free flight along the view. Space up, Ctrl down, Shift faster. No falls while on;
+## noclip also turns the collision shape off.
+var flying := false
+var noclip := false
+var fly_speed := 10.0
 
 ## v14: the Pennon (pennon_pickup.gd). [Space] in mid-air, with at least glide_min_height of air below (so never
 ## straight out of a jump on flat ground), opens it; [Space] again folds it. Steer by looking: level it sinks
@@ -175,6 +181,7 @@ func _ready() -> void:
 	_emit_shield.call_deferred()
 	_add_minimap()
 	_add_hud_extras()
+	GraphicsSettings.apply.call_deferred(self)
 	_style_banner()
 	var dc := CanvasLayer.new()
 	dc.name = "DebugConsole"
@@ -296,7 +303,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("dash"):
 		dash()
 	elif event.is_action_pressed("ui_cancel"):
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		if _inventory:
+			_inventory.call("open")     # Esc opens the [I] menu (pause + graphics preset)
+		else:
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	elif event.is_action_pressed("toggle_lantern"):
 		lantern.visible = not lantern.visible
 	elif event.is_action_pressed("interact"):
@@ -326,6 +336,11 @@ func _physics_process(delta: float) -> void:
 		_jump_buf = maxf(0.0, _jump_buf - delta)
 
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	if flying:
+		_fly_physics(input_dir)
+		_regen(delta)
+		_update_prompt()
+		return
 	if Input.is_action_just_pressed("jump") and has_pennon and not is_on_floor() and not is_on_ladder():
 		if gliding:
 			_end_glide()
@@ -364,6 +379,31 @@ func _track_fall(climbed: bool) -> void:
 	else:
 		_airborne = true
 		_fall_top = maxf(_fall_top, global_position.y)
+
+## Debug console: `on` flies, `through_walls` also drops collision. Landing afterwards never counts as a fall.
+func set_flying(on: bool, through_walls := false) -> void:
+	flying = on
+	noclip = on and through_walls
+	$CollisionShape3D.disabled = noclip
+	if on:
+		_end_glide()
+		_dash_t = 0.0
+	velocity = Vector3.ZERO
+	reset_fall()
+
+func _fly_physics(input_dir: Vector2) -> void:
+	var dir := camera.global_basis * Vector3(input_dir.x, 0.0, input_dir.y)
+	if Input.is_action_pressed("jump"):
+		dir += Vector3.UP
+	if Input.is_physical_key_pressed(KEY_CTRL):
+		dir += Vector3.DOWN
+	var speed := fly_speed * (3.0 if Input.is_action_pressed("dash") else 1.0)
+	velocity = dir.limit_length(1.0) * speed
+	if noclip:
+		global_position += velocity * get_physics_process_delta_time()
+	else:
+		move_and_slide()
+	reset_fall()
 
 ## Call after teleporting the player so the move doesn't count as a fall.
 func reset_fall() -> void:
@@ -734,7 +774,7 @@ func _glide_physics(delta: float, input_dir: Vector2) -> void:
 
 # ---------------------------------------------------------------- dash + stick
 func dash() -> void:
-	if not input_enabled or gliding or _dash_cd > 0.0 or is_on_ladder() or (not is_on_floor() and not _air_dash):
+	if not input_enabled or gliding or flying or _dash_cd > 0.0 or is_on_ladder() or (not is_on_floor() and not _air_dash):
 		return
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	if input_dir == Vector2.ZERO:
