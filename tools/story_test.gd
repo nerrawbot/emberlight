@@ -147,7 +147,9 @@ func _run() -> void:
 	ok("surface: [I] panel shows weapon, tokens, materials", inv.visible and "Steel shaft" in txt and "18" in txt and "Voltaic core" in txt and "Scrap" in txt)
 	ok("surface: [I] pauses the game", paused)
 	inv.call("toggle")
-	ok("surface: closing [I] unpauses", not paused and not inv.visible)
+	var unpaused := not paused
+	await create_timer(0.3).timeout      # (the panel fades out over 0.14 s)
+	ok("surface: closing [I] unpauses", unpaused and not inv.visible)
 
 	# the drone, before the hint
 	var drone := surf.get_node("DronePickup")

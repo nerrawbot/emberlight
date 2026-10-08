@@ -113,4 +113,98 @@ const TREES := {
 			"next": "hub",
 		},
 	},
+
+	# ---------------------------------------------------------------- the radio cabin: Ember's broadcast, live
+	# Played by scripts/mast/cabin_console.gd once the final tuning locks. The lamplighter of Emberlight, who keeps the
+	# city's lamps and has called into the dark for years. Points the player at the very top and the high wind.
+	"ember_lamplighter": {
+		"start": {"next": "hello"},
+		"hello": {
+			"lines": [
+				"—hello? Hello! Is that— is that the Heretic relay? Your light's been dark since before my hair went grey.",
+				"This is Emberlight. Lamp station nine, at the edge of the Fields. I keep the lamps. I've been calling into the dark a long time. Nobody ever {answered}.",
+				"You climbed it, didn't you. All of it. Then listen close, I don't know how long the line will hold.",
+				"There's a wind off the top of that mast. The high wind. It runs straight down to the Fields. The old couriers used to ride it, on silk.",
+			],
+			"next": "wings",
+		},
+		"wings": {
+			"branch": [{"need": "has_pennon", "goto": "wings_have"}],
+			"lines": [
+				"You'll need wings. A courier's pennon: silk on spars. There was one kept at the Heretic, in the hall under the mast. Find it.",
+				"Then go up. The very top, past the cabin, past everything. Jump into the wind and open it.",
+			],
+			"next": "bye",
+		},
+		"wings_have": {
+			"lines": [
+				"You've a pennon? Then don't wait for me. Go up. The very top, past the cabin, past everything.",
+				"Jump into the wind and open it. It'll carry you.",
+			],
+			"next": "bye",
+		},
+		"bye": {
+			"lines": [
+				"We'll light the way. Look for the lamps. Emberlight is— {signal fading}—",
+				"—{waiting}.",
+			],
+		},
+	},
+
+	# ---------------------------------------------------------------- surface.tscn, the mast's band 1: SENTINEL-11
+	# The station keeper (scripts/mast_signal.gd builds it). Knows the four interlocks, hints at the Pennon.
+	"sentinel_11": {
+		"start": {"branch": [{"need": "met_watcher_11", "goto": "hub"}], "next": "greet"},
+		"greet": {
+			"set": {"met_watcher_11": true},
+			"lines": [
+				"Footsteps on the gantry. The Sphaeroid let you through. Then it is {down}. It guarded the wrong door.",
+				"SENTINEL-11. Keeper of the Heretic relay. The relay has been out of tune for {█████} cycles.",
+				"Four bands up this mast. Four stations: power, frequency, bearing, gain. Each band's interlock holds the climb shut until its station reports in tune.",
+				"Tune them as you climb. In the cabin you will hear what the mast hears. Something calls from the far side. It has called a long {time}.",
+			],
+			"next": "wing",
+		},
+		"wing": {
+			"branch": [{"need": "has_pennon", "goto": "wing_have"}],
+			"set": {"pennon_hint": true},
+			"lines": [
+				"One more thing. The top of this mast is not the end of anything. It is a place to leave {from}.",
+				"Behind you, in the hall: a wall that was never a wall. What rests behind it has {wings}. Take it before you climb, or the top will only be the top.",
+			],
+			"next": "hub",
+		},
+		"wing_have": {
+			"lines": ["You carry a pennon. Good. The top of this mast is not the end of anything. It is a place to leave {from}."],
+			"next": "hub",
+		},
+		"hub": {
+			"lines": ["SENTINEL-11. The relay {listens}."],
+			"choices": [
+				{"text": "What do I do here?", "goto": "status"},
+				{"text": "What calls from the far side?", "goto": "far"},
+				{"text": "The thing with wings...", "goto": "wing", "need_not": "has_pennon"},
+				{"text": "[Leave]", "goto": ""},
+			],
+		},
+		"status": {
+			"branch": [{"need": "mast_final", "goto": "status_done"}, {"need": "mast_gain", "goto": "status_cabin"},
+				{"need": "mast_bearing", "goto": "status_4"}, {"need": "mast_freq", "goto": "status_3"},
+				{"need": "mast_power", "goto": "status_2"}],
+			"lines": ["This band first. The station here is dead: no {power} on the feed. Restore it and the stair interlock lets go."],
+			"next": "hub",
+		},
+		"status_2": {"lines": ["Power holds. Band two next. Its station drifts off {frequency}. The call sign blinks from the end of the cabin's boom; band two's west side can see it. Make the station blink the same. The winch waits on it."], "next": "hub"},
+		"status_3": {"lines": ["Band three. The dish is turned the wrong way. It must face the far side. Look through its sight and follow the cable line out, past the pylon, into the haze. Something there still burns. Its {bearing} opens the flaps."], "next": "hub"},
+		"status_4": {"lines": ["Band four. Gain. The waveguide is {starved}. Three valves round the band feed it. Each one robs one needle to feed another; none can be set alone. All three needles in the green, then the lever. Then the plate comes down."], "next": "hub"},
+		"status_cabin": {"lines": ["All four bands report. The cabin. The console. Listen, and tune the {rest}."], "next": "hub"},
+		"status_done": {"lines": ["The relay is in tune. Someone in Emberlight answered. This unit heard it too. Climb past the cabin. To the very top. Then {leave}."], "next": "hub"},
+		"far": {
+			"lines": [
+				"Past the cable line. Past the fields. A city that kept its lamps {lit}. Emberlight.",
+				"Its broadcast reaches this mast in pieces. Tune the relay and the pieces will {join}.",
+			],
+			"next": "hub",
+		},
+	},
 }

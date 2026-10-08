@@ -72,6 +72,10 @@ func _experiment(main: Node, e: String) -> void:
 		"ssr32":env.ssr_max_steps = 32
 		"fog80": RenderingServer.environment_set_volumetric_fog_volume_size(80, 80)
 		"ssao": env.ssao_enabled = false
+		"noclutter": main.get_node("Clutter").visible = false        # v17 ground clutter (surface)
+		"nodecals": main.get_node("Decals").visible = false          # v18 wall decals (surface)
+		"clutternoshadow":
+			for g in _all(main.get_node("Clutter"), "GeometryInstance3D", []): g.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		"glow": env.glow_enabled = false
 		"omnishadow":
 			for l in _all(main, "OmniLight3D", []): l.shadow_enabled = false

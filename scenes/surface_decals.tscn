@@ -1,0 +1,1618 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/decals/leak_rust.png" id="1_m5jwf"]
+[ext_resource type="Texture2D" path="res://assets/decals/stencil_04.png" id="2_cpxxk"]
+[ext_resource type="Texture2D" path="res://assets/decals/leak_soot.png" id="3_rruea"]
+[ext_resource type="Texture2D" path="res://assets/decals/stain_soot.png" id="4_20tyt"]
+[ext_resource type="Texture2D" path="res://assets/decals/hazard.png" id="5_83lwi"]
+[ext_resource type="Texture2D" path="res://assets/decals/stain_rust.png" id="6_n1dt0"]
+[ext_resource type="Texture2D" path="res://assets/decals/poster_red.png" id="7_u3rlp"]
+[ext_resource type="Texture2D" path="res://assets/decals/arrow.png" id="8_y6sx8"]
+[ext_resource type="Texture2D" path="res://assets/decals/stain_damp.png" id="9_ay8ed"]
+[ext_resource type="Texture2D" path="res://assets/decals/stencil_k9.png" id="10_1prxy"]
+[ext_resource type="Texture2D" path="res://assets/decals/stencil_c3.png" id="11_2haf0"]
+[ext_resource type="Texture2D" path="res://assets/decals/stencil_b2.png" id="12_c5usk"]
+[ext_resource type="Texture2D" path="res://assets/decals/stencil_17.png" id="13_yamds"]
+[ext_resource type="Texture2D" path="res://assets/decals/poster_blue.png" id="14_en5l3"]
+[ext_resource type="Texture2D" path="res://assets/decals/stencil_no_entry.png" id="15_m5jwf"]
+
+[node name="Decals" type="Node3D" unique_id=573583671]
+
+[node name="leak_rust_0" type="Decal" parent="." unique_id=1344442888]
+transform = Transform3D(-0.038930006, -0.99924195, 0, 0, 0, -1, 0.99924195, -0.038930006, 0, -115.50981, 40.8905, 154.18268)
+size = Vector3(0.80365556, 0.6, 3.2146223)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.92417085, 0.92417085, 0.92417085, 0.76088494)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stencil_04_1" type="Decal" parent="." unique_id=1244366489]
+transform = Transform3D(-0.49185032, -0.8706798, 0, 0, 0, -1, 0.8706798, -0.49185032, 0, -114.09056, 40.68705, 149.30681)
+size = Vector3(0.7057323, 0.6, 0.45368505)
+texture_albedo = ExtResource("2_cpxxk")
+modulate = Color(0.940855, 0.940855, 0.940855, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_soot_2" type="Decal" parent="." unique_id=442653437]
+transform = Transform3D(0.42261744, -0.9063082, 0, 0, 0, -1, 0.9063082, 0.42261744, 0, -113.55097, 40.921062, 157.07808)
+size = Vector3(0.90219814, 0.6, 3.6087925)
+texture_albedo = ExtResource("3_rruea")
+modulate = Color(0.9737847, 0.9737847, 0.9737847, 0.99696505)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_soot_3" type="Decal" parent="." unique_id=281125112]
+transform = Transform3D(-0.49185246, -0.8706786, 0, 0, 0, -1, 0.8706786, -0.49185246, 0, -111.54199, 38.706635, 147.84499)
+size = Vector3(2.3731227, 0.6, 1.8780254)
+texture_albedo = ExtResource("4_20tyt")
+modulate = Color(0.9546289, 0.9546289, 0.9546289, 0.77196175)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="hazard_4" type="Decal" parent="." unique_id=363999913]
+transform = Transform3D(-0.49185246, -0.8706786, 0, 0, 0, -1, 0.8706786, -0.49185246, 0, -113.862785, 38.742764, 151.95328)
+size = Vector3(1.8599551, 0.6, 0.46498877)
+texture_albedo = ExtResource("5_83lwi")
+modulate = Color(0.8109671, 0.8109671, 0.8109671, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="arrow_5" type="Decal" parent="." unique_id=1837856843]
+transform = Transform3D(0.42261744, -0.9063082, 0, 0, 0, -1, 0.9063082, 0.42261744, 0, -112.288605, 39.39195, 159.78523)
+size = Vector3(0.96601254, 0.6, 0.48300627)
+texture_albedo = ExtResource("8_y6sx8")
+modulate = Color(0.8278777, 0.8278777, 0.8278777, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="arrow_6" type="Decal" parent="." unique_id=1030058507]
+transform = Transform3D(0.42261744, -0.90630823, 0, 0, 0, -1, 0.90630823, 0.42261744, 0, -110.67043, 39.409782, 163.2554)
+size = Vector3(0.7711426, 0.6, 0.3855713)
+texture_albedo = ExtResource("8_y6sx8")
+modulate = Color(0.85224116, 0.85224116, 0.85224116, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_soot_7" type="Decal" parent="." unique_id=414126028]
+transform = Transform3D(0.70590776, -0.70830387, 0, 0, 0, -1, 0.70830387, 0.70590776, 0, -110.20812, 41.749252, 165.27292)
+size = Vector3(1.0542846, 0.6, 4.2171383)
+texture_albedo = ExtResource("3_rruea")
+modulate = Color(0.88716435, 0.88716435, 0.88716435, 0.8226897)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_soot_8" type="Decal" parent="." unique_id=973532629]
+transform = Transform3D(-0.7930483, -0.60915875, 0, 0, 0, -1, 0.60915875, -0.7930483, 0, -108.17588, 41.53916, 144.48581)
+size = Vector3(0.96703815, 0.6, 3.8681526)
+texture_albedo = ExtResource("3_rruea")
+modulate = Color(0.95859057, 0.95859057, 0.95859057, 0.90272284)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="poster_blue_9" type="Decal" parent="." unique_id=550607228]
+transform = Transform3D(-0.7930484, -0.60915875, 0, 0, 0, -1, 0.60915875, -0.7930484, 0, -109.64022, 39.461178, 145.6106)
+size = Vector3(0.6307024, 0.6, 0.8869252)
+texture_albedo = ExtResource("14_en5l3")
+modulate = Color(0.8924842, 0.8924842, 0.8924842, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_soot_10" type="Decal" parent="." unique_id=212711506]
+transform = Transform3D(0.9048681, -0.42569205, 0, 0, 0, -1, 0.42569205, 0.9048681, 0, -108.503044, 38.57194, 165.51515)
+size = Vector3(1.5282286, 0.6, 0.9262778)
+texture_albedo = ExtResource("4_20tyt")
+modulate = Color(0.83824545, 0.83824545, 0.83824545, 0.7882153)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stencil_c3_11" type="Decal" parent="." unique_id=376954689]
+transform = Transform3D(-0.7930483, -0.60915875, 0, 0, 0, -1, 0.60915875, -0.7930483, 0, -105.34725, 40.15175, 142.31306)
+size = Vector3(0.6800774, 0.6, 0.4371926)
+texture_albedo = ExtResource("11_2haf0")
+modulate = Color(0.9675313, 0.9675313, 0.9675313, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="hazard_12" type="Decal" parent="." unique_id=645536942]
+transform = Transform3D(0.9048681, -0.42569202, 0, 0, 0, -1, 0.42569202, 0.9048681, 0, -104.21365, 38.79865, 167.53307)
+size = Vector3(1.9996414, 0.6, 0.49991035)
+texture_albedo = ExtResource("5_83lwi")
+modulate = Color(0.85776293, 0.85776293, 0.85776293, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_soot_13" type="Decal" parent="." unique_id=2101744359]
+transform = Transform3D(0.9048681, -0.42569202, 0, 0, 0, -1, 0.42569202, 0.9048681, 0, -105.69925, 41.357258, 166.83415)
+size = Vector3(0.97749484, 0.6, 3.9099793)
+texture_albedo = ExtResource("3_rruea")
+modulate = Color(0.9415359, 0.9415359, 0.9415359, 0.8642739)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_soot_14" type="Decal" parent="." unique_id=118059181]
+transform = Transform3D(-0.9474345, -0.31994995, 0, 0, 0, -1, 0.31994995, -0.9474345, 0, -102.116615, 40.327515, 140.4091)
+size = Vector3(0.9611744, 0.6, 3.8446977)
+texture_albedo = ExtResource("3_rruea")
+modulate = Color(0.97022635, 0.97022635, 0.97022635, 0.96699756)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_15" type="Decal" parent="." unique_id=2133406766]
+transform = Transform3D(-0.9474336, -0.31995258, 0, 0, 0, -1, 0.31995258, -0.9474336, 0, -99.47119, 41.00814, 137.93253)
+size = Vector3(0.90193653, 0.6, 3.6077461)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.9813381, 0.9813381, 0.9813381, 0.98682886)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_16" type="Decal" parent="." unique_id=429286598]
+transform = Transform3D(0.96345323, 0.26787674, 0, 0, 0, -1, -0.26787674, 0.96345323, 0, -99.05386, 41.307053, 167.10983)
+size = Vector3(0.8748652, 0.6, 3.4994607)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.91470337, 0.91470337, 0.91470337, 0.8733356)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stencil_c3_17" type="Decal" parent="." unique_id=304689371]
+transform = Transform3D(0.99645144, -0.08416979, 0, 0, 0, -1, 0.08416979, 0.99645144, 0, -102.65621, 40.794823, 168.68794)
+size = Vector3(0.7900366, 0.6, 0.5078807)
+texture_albedo = ExtResource("11_2haf0")
+modulate = Color(0.802858, 0.802858, 0.802858, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_damp_18" type="Decal" parent="." unique_id=1597701625]
+transform = Transform3D(-0.9474344, -0.31994995, 0, 0, 0, -1, 0.31994995, -0.9474344, 0, -96.590294, 38.461456, 138.54288)
+size = Vector3(1.8972117, 0.6, 1.2400116)
+texture_albedo = ExtResource("9_ay8ed")
+modulate = Color(0.8068866, 0.8068866, 0.8068866, 0.9088783)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_rust_19" type="Decal" parent="." unique_id=1577658823]
+transform = Transform3D(0.96345323, 0.26787674, 0, 0, 0, -1, -0.26787674, 0.96345323, 0, -99.38062, 38.60044, 167.2007)
+size = Vector3(1.4047121, 0.6, 0.8767722)
+texture_albedo = ExtResource("6_n1dt0")
+modulate = Color(0.9035234, 0.9035234, 0.9035234, 0.9561024)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="hazard_20" type="Decal" parent="." unique_id=855068646]
+transform = Transform3D(0.43175188, -0.90199244, 0, 0, 0, -1, 0.90199244, 0.43175188, 0, -95.24983, 38.77669, 165.57954)
+size = Vector3(1.5372353, 0.6, 0.38430882)
+texture_albedo = ExtResource("5_83lwi")
+modulate = Color(0.97950625, 0.97950625, 0.97950625, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stencil_17_21" type="Decal" parent="." unique_id=813014589]
+transform = Transform3D(-0.9999317, 0.011690461, 0, 0, 0, -1, -0.011690461, -0.9999317, 0, -94.58144, 40.53767, 137.46844)
+size = Vector3(0.72288024, 0.6, 0.46470875)
+texture_albedo = ExtResource("13_yamds")
+modulate = Color(0.8372103, 0.8372103, 0.8372103, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_22" type="Decal" parent="." unique_id=431751114]
+transform = Transform3D(-0.62847143, -0.77783275, 0, 0, 0, -1, 0.77783275, -0.62847143, 0, -88.02428, 40.96271, 140.66058)
+size = Vector3(0.9908286, 0.6, 3.9633143)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.9655023, 0.9655023, 0.9655023, 0.95925677)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="arrow_23" type="Decal" parent="." unique_id=836206283]
+transform = Transform3D(0.5824043, -0.8128993, 0, 0, 0, -1, 0.8128993, 0.5824043, 0, -90.93512, 39.36413, 164.23091)
+size = Vector3(0.9668063, 0.6, 0.48340315)
+texture_albedo = ExtResource("8_y6sx8")
+modulate = Color(0.82318795, 0.82318795, 0.82318795, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_24" type="Decal" parent="." unique_id=260824770]
+transform = Transform3D(0.963453, 0.26787764, 0, 0, 0, -1, -0.26787764, 0.963453, 0, -95.712364, 41.39921, 166.1808)
+size = Vector3(0.79934466, 0.6, 3.1973786)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.8530179, 0.8530179, 0.8530179, 0.89668405)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_damp_25" type="Decal" parent="." unique_id=1714446712]
+transform = Transform3D(-0.8468902, -0.53176785, 0, 0, 0, -1, 0.53176785, -0.8468902, 0, -85.34616, 38.77084, 141.85077)
+size = Vector3(1.5207093, 0.6, 1.1772059)
+texture_albedo = ExtResource("9_ay8ed")
+modulate = Color(0.9214324, 0.9214324, 0.9214324, 0.96575487)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="poster_red_26" type="Decal" parent="." unique_id=1416587920]
+transform = Transform3D(0.81290096, 0.582402, 0, 0, 0, -1, -0.582402, 0.81290096, 0, -87.98102, 39.712376, 161.361)
+size = Vector3(0.59973526, 0.6, 0.8433777)
+texture_albedo = ExtResource("7_u3rlp")
+modulate = Color(0.8328746, 0.8328746, 0.8328746, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_27" type="Decal" parent="." unique_id=1703706005]
+transform = Transform3D(0.66655225, 0.7454583, 0, 0, 0, -1, -0.7454583, 0.66655225, 0, -85.19591, 41.678135, 158.4575)
+size = Vector3(1.003235, 0.6, 4.01294)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.8659358, 0.8659358, 0.8659358, 0.89019984)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stencil_04_28" type="Decal" parent="." unique_id=596961842]
+transform = Transform3D(0.66655225, 0.7454583, 0, 0, 0, -1, -0.7454583, 0.66655225, 0, -83.21008, 39.93837, 156.23659)
+size = Vector3(0.7496465, 0.6, 0.4819156)
+texture_albedo = ExtResource("2_cpxxk")
+modulate = Color(0.9288715, 0.9288715, 0.9288715, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stencil_c3_29" type="Decal" parent="." unique_id=1811443465]
+transform = Transform3D(-0.5317684, 0.84688985, 0, 0, 0, -1, -0.84688985, -0.5317684, 0, -81.97565, 40.238293, 140.82027)
+size = Vector3(0.6877794, 0.6, 0.44214392)
+texture_albedo = ExtResource("11_2haf0")
+modulate = Color(0.9917307, 0.9917307, 0.9917307, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_soot_30" type="Decal" parent="." unique_id=805401431]
+transform = Transform3D(-0.031433098, 0.9995059, 0, 0, 0, -1, -0.9995059, -0.031433098, 0, -82.51079, 40.624443, 151.11292)
+size = Vector3(1.0488193, 0.6, 4.195277)
+texture_albedo = ExtResource("3_rruea")
+modulate = Color(0.87187535, 0.87187535, 0.87187535, 0.93069834)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stencil_b2_31" type="Decal" parent="." unique_id=2049872067]
+transform = Transform3D(0.8468892, 0.5317695, 0, 0, 0, -1, -0.5317695, 0.8468892, 0, -81.06188, 40.011364, 144.35612)
+size = Vector3(0.7001683, 0.6, 0.4501082)
+texture_albedo = ExtResource("12_c5usk")
+modulate = Color(0.9167983, 0.9167983, 0.9167983, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_soot_32" type="Decal" parent="." unique_id=1480024033]
+transform = Transform3D(0.66655225, 0.7454583, 0, 0, 0, -1, -0.7454583, 0.66655225, 0, -84.83645, 38.80259, 158.0555)
+size = Vector3(2.491047, 0.6, 1.4302211)
+texture_albedo = ExtResource("4_20tyt")
+modulate = Color(0.8306146, 0.8306146, 0.8306146, 0.94924843)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_rust_33" type="Decal" parent="." unique_id=694303721]
+transform = Transform3D(-0.0314331, 0.9995059, 0, 0, 0, -1, -0.9995059, -0.0314331, 0, -82.56278, 38.534363, 149.45995)
+size = Vector3(1.4354212, 0.6, 1.0263902)
+texture_albedo = ExtResource("6_n1dt0")
+modulate = Color(0.9871192, 0.9871192, 0.9871192, 0.7638566)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_34" type="Decal" parent="." unique_id=304413509]
+transform = Transform3D(-0.29175594, 0.95649284, 0, 0, 0, -1, -0.95649284, -0.29175594, 0, -82.11159, 41.35809, 147.6424)
+size = Vector3(0.84502876, 0.6, 3.380115)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.8389474, 0.8389474, 0.8389474, 0.85221213)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_rust_35" type="Decal" parent="." unique_id=79104510]
+transform = Transform3D(0.76525897, -0.6437226, 0, 0, 0, -1, 0.6437226, 0.76525897, 0, -72.14245, 38.711376, 120.21026)
+size = Vector3(1.9769464, 0.6, 1.4332772)
+texture_albedo = ExtResource("6_n1dt0")
+modulate = Color(0.94196284, 0.94196284, 0.94196284, 0.9826014)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stencil_17_36" type="Decal" parent="." unique_id=115205140]
+transform = Transform3D(0.6437229, 0.7652587, 0, 0, 0, -1, -0.7652587, 0.6437229, 0, -73.045494, 40.026684, 118.07765)
+size = Vector3(0.6886151, 0.6, 0.44268113)
+texture_albedo = ExtResource("13_yamds")
+modulate = Color(0.8873215, 0.8873215, 0.8873215, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="arrow_37" type="Decal" parent="." unique_id=558859315]
+transform = Transform3D(0.6437229, 0.7652587, 0, 0, 0, -1, -0.7652587, 0.6437229, 0, -69.49932, 39.37276, 119.45441)
+size = Vector3(0.9437907, 0.6, 0.47189534)
+texture_albedo = ExtResource("8_y6sx8")
+modulate = Color(0.9079988, 0.9079988, 0.9079988, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="poster_red_38" type="Decal" parent="." unique_id=101092074]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, -41.116993, 35.794273, -0.77999985)
+size = Vector3(0.59141153, 0.6, 0.8316725)
+texture_albedo = ExtResource("7_u3rlp")
+modulate = Color(0.83696043, 0.83696043, 0.83696043, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stencil_k9_39" type="Decal" parent="." unique_id=1928991985]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, -37.115303, 36.81968, -0.77999926)
+size = Vector3(0.75937355, 0.6, 0.48816872)
+texture_albedo = ExtResource("10_1prxy")
+modulate = Color(0.9048705, 0.9048705, 0.9048705, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="hazard_40" type="Decal" parent="." unique_id=1369893143]
+transform = Transform3D(-0.85716695, -0.5150388, 0, 0, 0, -1, 0.5150388, -0.85716695, 0, -32.214836, 35.033783, 28.740965)
+size = Vector3(1.4812536, 0.6, 0.3703134)
+texture_albedo = ExtResource("5_83lwi")
+modulate = Color(0.83678716, 0.83678716, 0.83678716, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_soot_41" type="Decal" parent="." unique_id=572629165]
+transform = Transform3D(0.51503795, -0.85716736, 0, 0, 0, -1, 0.85716736, 0.51503795, 0, -30.906464, 35.095665, 33.900055)
+size = Vector3(1.4606582, 0.6, 0.8628305)
+texture_albedo = ExtResource("4_20tyt")
+modulate = Color(0.8239978, 0.8239978, 0.8239978, 0.798697)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_rust_42" type="Decal" parent="." unique_id=1208913361]
+transform = Transform3D(-0.8571673, -0.5150381, 0, 0, 0, -1, 0.5150381, -0.8571673, 0, -29.211838, 35.101994, 26.936584)
+size = Vector3(2.1302116, 0.6, 1.6229758)
+texture_albedo = ExtResource("6_n1dt0")
+modulate = Color(0.86372465, 0.86372465, 0.86372465, 0.7544257)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_rust_43" type="Decal" parent="." unique_id=537356]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, -23.5, 35.447926, -37.254196)
+size = Vector3(1.6195184, 0.6, 1.0403045)
+texture_albedo = ExtResource("6_n1dt0")
+modulate = Color(0.8371631, 0.8371631, 0.8371631, 0.9738374)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="poster_blue_44" type="Decal" parent="." unique_id=827001115]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, -23.5, 36.565533, -34.881638)
+size = Vector3(0.63858247, 0.6, 0.8980066)
+texture_albedo = ExtResource("14_en5l3")
+modulate = Color(0.9194578, 0.9194578, 0.9194578, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_damp_45" type="Decal" parent="." unique_id=24657534]
+transform = Transform3D(-0.5150375, 0.85716766, 0, 0, 0, -1, -0.85716766, -0.5150375, 0, -25.100842, 34.826622, 26.08779)
+size = Vector3(1.7623677, 0.6, 1.072164)
+texture_albedo = ExtResource("9_ay8ed")
+modulate = Color(0.89807713, 0.89807713, 0.89807713, 0.8792783)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_soot_46" type="Decal" parent="." unique_id=701658345]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, -18.802734, 36.971687, -39)
+size = Vector3(1.0621576, 0.6, 4.2486305)
+texture_albedo = ExtResource("3_rruea")
+modulate = Color(0.9898951, 0.9898951, 0.9898951, 0.7685587)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="poster_blue_47" type="Decal" parent="." unique_id=1069077912]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, -21.538658, 36.017754, -39)
+size = Vector3(0.60420287, 0.6, 0.8496603)
+texture_albedo = ExtResource("14_en5l3")
+modulate = Color(0.9777315, 0.9777315, 0.9777315, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="hazard_48" type="Decal" parent="." unique_id=1466541068]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, -21.583097, 34.95532, -33)
+size = Vector3(1.7174422, 0.6, 0.42936054)
+texture_albedo = ExtResource("5_83lwi")
+modulate = Color(0.99435097, 0.99435097, 0.99435097, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_soot_49" type="Decal" parent="." unique_id=34376015]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, -20.342638, 37.254993, -33)
+size = Vector3(1.0563092, 0.6, 4.225237)
+texture_albedo = ExtResource("3_rruea")
+modulate = Color(0.99815035, 0.99815035, 0.99815035, 0.9284021)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="hazard_50" type="Decal" parent="." unique_id=1886431632]
+transform = Transform3D(-0.5150382, 0.8571673, 0, 0, 0, -1, -0.8571673, -0.5150382, 0, -23.177668, 35.12566, 29.288492)
+size = Vector3(1.7533559, 0.6, 0.43833897)
+texture_albedo = ExtResource("5_83lwi")
+modulate = Color(0.9309589, 0.9309589, 0.9309589, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="poster_red_51" type="Decal" parent="." unique_id=329212339]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, -17.242159, 36.015186, -33)
+size = Vector3(0.5812026, 0.6, 0.8173162)
+texture_albedo = ExtResource("7_u3rlp")
+modulate = Color(0.80953276, 0.80953276, 0.80953276, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stencil_no_entry_52" type="Decal" parent="." unique_id=97442045]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, -16.5, 37.30178, -36.76615)
+size = Vector3(2.9178276, 0.6, 0.52520895)
+texture_albedo = ExtResource("15_m5jwf")
+modulate = Color(0.828167, 0.828167, 0.828167, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_soot_53" type="Decal" parent="." unique_id=1366614886]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, -16.5, 44.428104, -36.577557)
+size = Vector3(0.91530675, 0.6, 3.661227)
+texture_albedo = ExtResource("3_rruea")
+modulate = Color(0.8871049, 0.8871049, 0.8871049, 0.90424263)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="hazard_54" type="Decal" parent="." unique_id=1019239595]
+transform = Transform3D(0.29237118, 0.95630497, 0, 0, 0, -1, -0.95630497, 0.29237118, 0, 1.6986088, 35.045574, 33.873455)
+size = Vector3(2.1180713, 0.6, 0.5295178)
+texture_albedo = ExtResource("5_83lwi")
+modulate = Color(0.844262, 0.844262, 0.844262, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_damp_55" type="Decal" parent="." unique_id=1461230801]
+transform = Transform3D(0.13917059, -0.99026847, 0, 0, 0, -1, 0.99026847, 0.13917059, 0, 40.2818, 36.194088, 35.284832)
+size = Vector3(1.6708813, 0.6, 1.3204262)
+texture_albedo = ExtResource("9_ay8ed")
+modulate = Color(0.9069743, 0.9069743, 0.9069743, 0.9554738)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_rust_56" type="Decal" parent="." unique_id=1686841086]
+transform = Transform3D(0.13917382, -0.990268, 0, 0, 0, -1, 0.990268, 0.13917382, 0, 39.883373, 35.108376, 32.4499)
+size = Vector3(1.416418, 0.6, 0.9862842)
+texture_albedo = ExtResource("6_n1dt0")
+modulate = Color(0.8569392, 0.8569392, 0.8569392, 0.8772071)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_damp_57" type="Decal" parent="." unique_id=4096884]
+transform = Transform3D(-0.9902682, -0.1391726, 0, 0, 0, -1, 0.1391726, -0.9902682, 0, 43.823845, 34.808285, 29.995275)
+size = Vector3(2.0070918, 0.6, 1.4072682)
+texture_albedo = ExtResource("9_ay8ed")
+modulate = Color(0.9975022, 0.9975022, 0.9975022, 0.8933221)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="poster_blue_58" type="Decal" parent="." unique_id=1010658816]
+transform = Transform3D(0.9702957, -0.24192198, 0, 0, 0, -1, 0.24192198, 0.9702957, 0, 45.27703, 35.868046, 21.77027)
+size = Vector3(0.56428367, 0.6, 0.7935239)
+texture_albedo = ExtResource("14_en5l3")
+modulate = Color(0.88374835, 0.88374835, 0.88374835, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_rust_59" type="Decal" parent="." unique_id=1505392409]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 54, 34.89324, 30.10282)
+size = Vector3(2.3277907, 0.6, 1.4973849)
+texture_albedo = ExtResource("6_n1dt0")
+modulate = Color(0.9032761, 0.9032761, 0.9032761, 0.9879385)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_60" type="Decal" parent="." unique_id=1496846280]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 54, 37.47112, 33.008343)
+size = Vector3(0.95681185, 0.6, 3.8272474)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.9376649, 0.9376649, 0.9376649, 0.97531974)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_61" type="Decal" parent="." unique_id=1659275623]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 54, 37.604183, 29.171091)
+size = Vector3(1.0945239, 0.6, 4.3780956)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.8813374, 0.8813374, 0.8813374, 0.8863447)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_damp_62" type="Decal" parent="." unique_id=1258149197]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 54, 34.824944, 36.183548)
+size = Vector3(1.516175, 0.6, 1.147611)
+texture_albedo = ExtResource("9_ay8ed")
+modulate = Color(0.8966043, 0.8966043, 0.8966043, 0.9894546)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="hazard_63" type="Decal" parent="." unique_id=1974221844]
+transform = Transform3D(0.20791093, -0.9781478, 0, 0, 0, -1, 0.9781478, 0.20791093, 0, 55.70084, 35.04891, -70.987015)
+size = Vector3(1.9960015, 0.6, 0.49900037)
+texture_albedo = ExtResource("5_83lwi")
+modulate = Color(0.87318105, 0.87318105, 0.87318105, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stencil_c3_64" type="Decal" parent="." unique_id=1653466482]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 57.217262, 36.677673, 27)
+size = Vector3(0.8064205, 0.6, 0.5184132)
+texture_albedo = ExtResource("11_2haf0")
+modulate = Color(0.9115614, 0.9115614, 0.9115614, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_soot_65" type="Decal" parent="." unique_id=873938561]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 54, 37.622215, 37.379303)
+size = Vector3(0.721999, 0.6, 2.887996)
+texture_albedo = ExtResource("3_rruea")
+modulate = Color(0.83732116, 0.83732116, 0.83732116, 0.93459725)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_66" type="Decal" parent="." unique_id=384760956]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 61, 37.112755, 5.883179)
+size = Vector3(1.1081586, 0.6, 4.4326344)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.82315624, 0.82315624, 0.82315624, 0.83172137)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_soot_67" type="Decal" parent="." unique_id=1678374015]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 59.413208, 35.013813, 27)
+size = Vector3(2.3039856, 0.6, 1.6561713)
+texture_albedo = ExtResource("4_20tyt")
+modulate = Color(0.82385105, 0.82385105, 0.82385105, 0.89973867)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="poster_red_68" type="Decal" parent="." unique_id=1625090504]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 56.455254, 35.80052, 38)
+size = Vector3(0.5898478, 0.6, 0.8294735)
+texture_albedo = ExtResource("7_u3rlp")
+modulate = Color(0.87644947, 0.87644947, 0.87644947, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stencil_c3_69" type="Decal" parent="." unique_id=1121970997]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 61.5, 36.413082, -7.069934)
+size = Vector3(0.7698479, 0.6, 0.49490225)
+texture_albedo = ExtResource("11_2haf0")
+modulate = Color(0.8408414, 0.8408414, 0.8408414, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_rust_70" type="Decal" parent="." unique_id=505672994]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 61, 34.668587, 1.5867871)
+size = Vector3(1.9884272, 0.6, 1.2327778)
+texture_albedo = ExtResource("6_n1dt0")
+modulate = Color(0.9368632, 0.9368632, 0.9368632, 0.97678727)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_71" type="Decal" parent="." unique_id=934081837]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 61.5, 37.473625, -1.1024764)
+size = Vector3(0.8989876, 0.6, 3.5959504)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.8012601, 0.8012601, 0.8012601, 0.8302927)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="hazard_72" type="Decal" parent="." unique_id=990766716]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 59.1199, 35.120506, 38)
+size = Vector3(1.9801285, 0.6, 0.49503213)
+texture_albedo = ExtResource("5_83lwi")
+modulate = Color(0.86571765, 0.86571765, 0.86571765, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_soot_73" type="Decal" parent="." unique_id=1974144922]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 61.884403, 37.30881, 38)
+size = Vector3(1.084527, 0.6, 4.338108)
+texture_albedo = ExtResource("3_rruea")
+modulate = Color(0.9340564, 0.9340564, 0.9340564, 0.9853316)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="poster_red_74" type="Decal" parent="." unique_id=34104620]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 64.42239, 35.921528, 38)
+size = Vector3(0.6144342, 0.6, 0.86404806)
+texture_albedo = ExtResource("7_u3rlp")
+modulate = Color(0.81371564, 0.81371564, 0.81371564, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="poster_red_75" type="Decal" parent="." unique_id=1907020110]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 65.548454, 35.849766, -9)
+size = Vector3(0.62009096, 0.6, 0.8720029)
+texture_albedo = ExtResource("7_u3rlp")
+modulate = Color(0.9824621, 0.9824621, 0.9824621, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="hazard_76" type="Decal" parent="." unique_id=1492890064]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 62.29015, 34.98928, 11.5)
+size = Vector3(2.0390618, 0.6, 0.50976545)
+texture_albedo = ExtResource("5_83lwi")
+modulate = Color(0.8489569, 0.8489569, 0.8489569, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_soot_77" type="Decal" parent="." unique_id=1360289265]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 64.14666, 37.083572, 11.5)
+size = Vector3(0.7516152, 0.6, 3.006461)
+texture_albedo = ExtResource("3_rruea")
+modulate = Color(0.8788249, 0.8788249, 0.8788249, 0.9131725)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_78" type="Decal" parent="." unique_id=451851664]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 61.894634, 38.094265, 27)
+size = Vector3(1.0809635, 0.6, 4.323854)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.8009631, 0.8009631, 0.8009631, 0.93303376)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_soot_79" type="Decal" parent="." unique_id=981844740]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 62.94125, 34.66406, 27)
+size = Vector3(2.2684164, 0.6, 1.2720041)
+texture_albedo = ExtResource("4_20tyt")
+modulate = Color(0.99748117, 0.99748117, 0.99748117, 0.8516936)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="poster_blue_80" type="Decal" parent="." unique_id=422597188]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 66.74346, 47.74238, 60.6)
+size = Vector3(0.60460585, 0.6, 0.850227)
+texture_albedo = ExtResource("14_en5l3")
+modulate = Color(0.9476199, 0.9476199, 0.9476199, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_soot_81" type="Decal" parent="." unique_id=1812646167]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 68.32444, 35.1019, 11.5)
+size = Vector3(2.386768, 0.6, 1.5599608)
+texture_albedo = ExtResource("4_20tyt")
+modulate = Color(0.9365057, 0.9365057, 0.9365057, 0.82089186)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_rust_82" type="Decal" parent="." unique_id=1904460523]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 65.81941, 34.936413, 27)
+size = Vector3(1.9228716, 0.6, 1.4179329)
+texture_albedo = ExtResource("6_n1dt0")
+modulate = Color(0.8286771, 0.8286771, 0.8286771, 0.88552487)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_83" type="Decal" parent="." unique_id=1186122315]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 70.35836, 37.652687, -9)
+size = Vector3(1.1179302, 0.6, 4.4717207)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.9370818, 0.9370818, 0.9370818, 0.8105626)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stencil_17_84" type="Decal" parent="." unique_id=666002043]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 70.83108, 36.715195, 11.5)
+size = Vector3(0.67422396, 0.6, 0.4334297)
+texture_albedo = ExtResource("13_yamds")
+modulate = Color(0.97622895, 0.97622895, 0.97622895, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_85" type="Decal" parent="." unique_id=461556256]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 65.06651, 37.57755, 27)
+size = Vector3(0.76649624, 0.6, 3.065985)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.90364933, 0.90364933, 0.90364933, 0.7888806)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="poster_red_86" type="Decal" parent="." unique_id=987258063]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 67, 35.803493, 29.709524)
+size = Vector3(0.6955816, 0.6, 0.97816163)
+texture_albedo = ExtResource("7_u3rlp")
+modulate = Color(0.92526937, 0.92526937, 0.92526937, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_damp_87" type="Decal" parent="." unique_id=1122798573]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 67, 34.9059, 32.794125)
+size = Vector3(2.3571467, 0.6, 1.6814995)
+texture_albedo = ExtResource("9_ay8ed")
+modulate = Color(0.89472204, 0.89472204, 0.89472204, 0.8484894)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_rust_88" type="Decal" parent="." unique_id=1195873122]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 67, 34.818394, 36.17453)
+size = Vector3(2.0290112, 0.6, 1.2001709)
+texture_albedo = ExtResource("6_n1dt0")
+modulate = Color(0.8024528, 0.8024528, 0.8024528, 0.86234134)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="poster_blue_89" type="Decal" parent="." unique_id=1745046849]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 67.327675, 47.324657, 64)
+size = Vector3(0.6502979, 0.6, 0.9144814)
+texture_albedo = ExtResource("14_en5l3")
+modulate = Color(0.8036478, 0.8036478, 0.8036478, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_90" type="Decal" parent="." unique_id=2070257350]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 67, 37.89, 35.5726)
+size = Vector3(1.0239938, 0.6, 4.0959754)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.8802948, 0.8802948, 0.8802948, 0.93982476)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stencil_k9_91" type="Decal" parent="." unique_id=1476931884]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 73, 36.79173, -6.2155004)
+size = Vector3(0.715683, 0.6, 0.46008193)
+texture_albedo = ExtResource("10_1prxy")
+modulate = Color(0.9918816, 0.9918816, 0.9918816, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="arrow_92" type="Decal" parent="." unique_id=466931904]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 73, 35.645287, -2.1232128)
+size = Vector3(0.7662424, 0.6, 0.3831212)
+texture_albedo = ExtResource("8_y6sx8")
+modulate = Color(0.9274933, 0.9274933, 0.9274933, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_damp_93" type="Decal" parent="." unique_id=570043030]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 73.5, 34.95198, 1.8053132)
+size = Vector3(2.1103783, 0.6, 1.1887357)
+texture_albedo = ExtResource("9_ay8ed")
+modulate = Color(0.92978704, 0.92978704, 0.92978704, 0.81124055)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_rust_94" type="Decal" parent="." unique_id=1927290751]
+transform = Transform3D(-0.92718315, -0.3746085, 0, 0, 0, -1, 0.3746085, -0.92718315, 0, 77.226585, 34.704334, 36.441196)
+size = Vector3(2.078844, 0.6, 1.205487)
+texture_albedo = ExtResource("6_n1dt0")
+modulate = Color(0.87490314, 0.87490314, 0.87490314, 0.8879143)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_soot_95" type="Decal" parent="." unique_id=1602766688]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 73.5, 37.85293, 1.140728)
+size = Vector3(1.0965824, 0.6, 4.3863297)
+texture_albedo = ExtResource("3_rruea")
+modulate = Color(0.80439734, 0.80439734, 0.80439734, 0.9818588)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_soot_96" type="Decal" parent="." unique_id=1898608057]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 73.5, 35.156788, 5.3145795)
+size = Vector3(2.245955, 0.6, 1.6402627)
+texture_albedo = ExtResource("4_20tyt")
+modulate = Color(0.9505243, 0.9505243, 0.9505243, 0.7944447)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_rust_97" type="Decal" parent="." unique_id=2136074244]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 73.5, 35.07479, 9.695174)
+size = Vector3(2.050067, 0.6, 1.2949818)
+texture_albedo = ExtResource("6_n1dt0")
+modulate = Color(0.9939542, 0.9939542, 0.9939542, 0.89786226)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_98" type="Decal" parent="." unique_id=623793775]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 73.5, 37.82644, 10.708205)
+size = Vector3(0.9123277, 0.6, 3.6493108)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.99682844, 0.99682844, 0.99682844, 0.7888463)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_99" type="Decal" parent="." unique_id=623152832]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 73, 42.560528, -5.251561)
+size = Vector3(0.96557355, 0.6, 3.8622942)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.9521688, 0.9521688, 0.9521688, 0.7737339)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="arrow_100" type="Decal" parent="." unique_id=1711553349]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 73, 40.322464, -1.9697869)
+size = Vector3(0.9816937, 0.6, 0.49084684)
+texture_albedo = ExtResource("8_y6sx8")
+modulate = Color(0.95376813, 0.95376813, 0.95376813, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_rust_101" type="Decal" parent="." unique_id=1844660268]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 88, 35.976616, -20.865963)
+size = Vector3(2.393113, 0.6, 1.6661804)
+texture_albedo = ExtResource("6_n1dt0")
+modulate = Color(0.8155543, 0.8155543, 0.8155543, 0.84541196)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_soot_102" type="Decal" parent="." unique_id=416849226]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 90, 37.895054, 39.741493)
+size = Vector3(0.70252, 0.6, 2.81008)
+texture_albedo = ExtResource("3_rruea")
+modulate = Color(0.9774032, 0.9774032, 0.9774032, 0.9927531)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_soot_103" type="Decal" parent="." unique_id=977542408]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 90, 34.681828, 45.55111)
+size = Vector3(2.2497017, 0.6, 1.6095725)
+texture_albedo = ExtResource("4_20tyt")
+modulate = Color(0.8947668, 0.8947668, 0.8947668, 0.7745)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_104" type="Decal" parent="." unique_id=1053141108]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 90, 37.97911, 49.001198)
+size = Vector3(0.80993325, 0.6, 3.239733)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.9314116, 0.9314116, 0.9314116, 0.77410483)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="hazard_105" type="Decal" parent="." unique_id=1929532983]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 90.59348, 35.215313, -22.5)
+size = Vector3(1.6730529, 0.6, 0.41826323)
+texture_albedo = ExtResource("5_83lwi")
+modulate = Color(0.97144854, 0.97144854, 0.97144854, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="hazard_106" type="Decal" parent="." unique_id=223539500]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 90, 34.942505, 40.54277)
+size = Vector3(1.5250108, 0.6, 0.3812527)
+texture_albedo = ExtResource("5_83lwi")
+modulate = Color(0.8645198, 0.8645198, 0.8645198, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stencil_17_107" type="Decal" parent="." unique_id=2118787958]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 90, 36.637844, 43.02929)
+size = Vector3(0.92242396, 0.6, 0.5929868)
+texture_albedo = ExtResource("13_yamds")
+modulate = Color(0.9608021, 0.9608021, 0.9608021, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_soot_108" type="Decal" parent="." unique_id=1260834767]
+transform = Transform3D(0, -1, 0, 0, 0, -1, 1, 0, 0, 90, 37.453674, 45.528553)
+size = Vector3(0.77200055, 0.6, 3.0880022)
+texture_albedo = ExtResource("3_rruea")
+modulate = Color(0.92340165, 0.92340165, 0.92340165, 0.9026285)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="poster_blue_109" type="Decal" parent="." unique_id=127891956]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 90.83998, 36.017086, -15.5)
+size = Vector3(0.59745806, 0.6, 0.8401754)
+texture_albedo = ExtResource("14_en5l3")
+modulate = Color(0.9272851, 0.9272851, 0.9272851, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_damp_110" type="Decal" parent="." unique_id=1202828080]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 94.6027, 35.37311, -22.5)
+size = Vector3(1.9571054, 0.6, 1.2564598)
+texture_albedo = ExtResource("9_ay8ed")
+modulate = Color(0.8074828, 0.8074828, 0.8074828, 0.8190751)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="hazard_111" type="Decal" parent="." unique_id=405727472]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 93.3295, 34.969376, 38)
+size = Vector3(2.1780858, 0.6, 0.54452145)
+texture_albedo = ExtResource("5_83lwi")
+modulate = Color(0.85831195, 0.85831195, 0.85831195, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_rust_112" type="Decal" parent="." unique_id=1718527525]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 96.08014, 34.85678, -15.5)
+size = Vector3(2.30479, 0.6, 1.665128)
+texture_albedo = ExtResource("6_n1dt0")
+modulate = Color(0.9587294, 0.9587294, 0.9587294, 0.9700427)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_rust_113" type="Decal" parent="." unique_id=1213452719]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 96.24332, 35.06161, 38)
+size = Vector3(2.1315804, 0.6, 1.6520308)
+texture_albedo = ExtResource("6_n1dt0")
+modulate = Color(0.89255744, 0.89255744, 0.89255744, 0.9037442)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="arrow_114" type="Decal" parent="." unique_id=1827888105]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 90.646904, 35.646084, 38)
+size = Vector3(0.8752799, 0.6, 0.43763995)
+texture_albedo = ExtResource("8_y6sx8")
+modulate = Color(0.9849835, 0.9849835, 0.9849835, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_soot_115" type="Decal" parent="." unique_id=2132445613]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 93.63, 37.719837, 38)
+size = Vector3(1.1372797, 0.6, 4.549119)
+texture_albedo = ExtResource("3_rruea")
+modulate = Color(0.844849, 0.844849, 0.844849, 0.9276159)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_116" type="Decal" parent="." unique_id=1522613303]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 97.52091, 37.392498, -15.5)
+size = Vector3(0.8361621, 0.6, 3.3446484)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.89496034, 0.89496034, 0.89496034, 0.84525734)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_117" type="Decal" parent="." unique_id=1823033739]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 98, 36.645515, -20.812881)
+size = Vector3(0.7318331, 0.6, 2.9273324)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.908232, 0.908232, 0.908232, 0.7709012)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stain_damp_118" type="Decal" parent="." unique_id=545304337]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 98, 34.851124, 42.391453)
+size = Vector3(2.1327162, 0.6, 1.6501501)
+texture_albedo = ExtResource("9_ay8ed")
+modulate = Color(0.84549606, 0.84549606, 0.84549606, 0.77978665)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="arrow_119" type="Decal" parent="." unique_id=2057476980]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 98, 35.763165, 46.33957)
+size = Vector3(0.81388247, 0.6, 0.40694124)
+texture_albedo = ExtResource("8_y6sx8")
+modulate = Color(0.9249075, 0.9249075, 0.9249075, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="stencil_04_120" type="Decal" parent="." unique_id=1881755234]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 98, 36.913773, -18.12684)
+size = Vector3(0.91101915, 0.6, 0.58565515)
+texture_albedo = ExtResource("2_cpxxk")
+modulate = Color(0.8933605, 0.8933605, 0.8933605, 1)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_soot_121" type="Decal" parent="." unique_id=755631689]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 98, 37.424335, 43.710052)
+size = Vector3(1.0706378, 0.6, 4.2825513)
+texture_albedo = ExtResource("3_rruea")
+modulate = Color(0.82953274, 0.82953274, 0.82953274, 0.84625906)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1
+
+[node name="leak_rust_122" type="Decal" parent="." unique_id=1834058950]
+transform = Transform3D(0, 1, 0, 0, 0, -1, -1, 0, 0, 98, 37.33283, 48.694473)
+size = Vector3(0.84005404, 0.6, 3.3602161)
+texture_albedo = ExtResource("1_m5jwf")
+modulate = Color(0.91213274, 0.91213274, 0.91213274, 0.85938877)
+normal_fade = 0.6
+upper_fade = 0.2
+lower_fade = 0.2
+distance_fade_enabled = true
+distance_fade_begin = 38.0
+distance_fade_length = 14.0
+cull_mask = 1

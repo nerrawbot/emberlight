@@ -37,6 +37,11 @@ uniform float ground_desat = 0.35;    // the original ground grade is a very sat
 uniform float normal_strength = 0.9;
 uniform float specular_amount = 0.12; // low: the dark rock otherwise reflects the cream sky and goes brown
 uniform vec3 tint = vec3(1.0);
+// v18: broad warm/cool and light/dark patches from a procedural noise (the painting's ground isn't one brown)
+uniform float hue_strength = 0.5;
+uniform vec3 warm_tint = vec3(1.1, 0.97, 0.82);
+uniform vec3 cool_tint = vec3(0.86, 0.9, 1.08);
+uniform float patch_strength = 0.22;
 
 varying vec3 w_pos;
 varying vec3 w_nrm;
@@ -46,6 +51,21 @@ void vertex() {
 	w_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	w_nrm = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	mask = COLOR;
+}
+
+float hash2(vec2 p) {
+	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+float vnoise(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	vec2 u = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash2(i), hash2(i + vec2(1.0, 0.0)), u.x), mix(hash2(i + vec2(0.0, 1.0)), hash2(i + vec2(1.0, 1.0)), u.x), u.y);
+}
+
+float fbm(vec2 p) {
+	return vnoise(p) * 0.55 + vnoise(p * 2.07 + 13.1) * 0.3 + vnoise(p * 4.13 + 7.7) * 0.15;
 }
 
 vec3 unpack_n(vec3 c) {
@@ -119,6 +139,13 @@ void fragment() {
 	// --- macro variation: one huge, faint sample so the plateau doesn't read as a repeating tile
 	float macro = dot(texture(moss_alb, w_pos.xz / macro_tile).rgb, vec3(0.3, 0.59, 0.11));
 	alb *= mix(1.0, 0.65 + macro * 1.1, macro_strength);
+
+	// v18 colour patches (rock faces get half)
+	float hn = fbm(w_pos.xz / 55.0);
+	float pn = fbm(w_pos.xz / 19.0 + 31.0);
+	vec3 hue = mix(cool_tint, warm_tint, smoothstep(0.3, 0.7, hn));
+	alb *= mix(vec3(1.0), hue, hue_strength * (1.0 - rw * 0.5));
+	alb *= 1.0 + (smoothstep(0.25, 0.75, pn) - 0.5) * 2.0 * patch_strength * (1.0 - rw * 0.5);
 
 	ALBEDO = alb * tint;
 	ROUGHNESS = clamp(orm.g, 0.35, 1.0);

@@ -55,7 +55,7 @@ func _swings_to_kill(e: Node, limit := 8) -> int:
 		if not hit:
 			return -1
 		n += 1
-		await _wait(p.attack_cooldown + 0.05)
+		await _wait(p.combo_cooldown + 0.05)      # (the 2nd, 4th.. swing is the combo backhand)
 	return n
 
 func _run() -> void:
@@ -135,7 +135,7 @@ func _run() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	_report("health bar shows once hit", hit1 and t._bar.visible and t.health < t.max_health)
-	await _wait(p.attack_cooldown + 0.05)
+	await _wait(p.combo_cooldown + 0.05)      # (the 2nd, 4th.. swing is the combo backhand)
 	var n := 1 + await _swings_to_kill(t)
 	_report("tripod dies to 4 swings", n == 4, "swings=%d" % n)
 	await get_tree().process_frame

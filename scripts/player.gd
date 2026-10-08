@@ -13,6 +13,27 @@ const Items := preload("res://scripts/items.gd")
 ## View-model pose of the shaft (camera space): grip low on the right, head leaning in from the upper right.
 const SHAFT_REST_POS := Vector3(0.42, -0.56, -0.5)
 const SHAFT_REST_ROT := Vector3(-46.0, -8.0, 6.0)
+## v19 shaft swings as keyframes after the current pose: [time, position, rotation_degrees, stop]. Hermite curves
+## through them; `stop` keys are turnarounds (zero velocity: the wind-up, the end of the follow-through).
+## A: forehand, cocked over the right shoulder, down across to the lower left. Hits at SWING_A_HIT.
+const SWING_A := [
+	[0.065, Vector3(0.5, -0.4, -0.36), Vector3(-22, -20, -26), true],
+	[0.105, Vector3(0.22, -0.43, -0.72), Vector3(-70, 8, 40), false],
+	[0.15, Vector3(-0.08, -0.6, -0.62), Vector3(-98, 28, 78), false],
+	[0.24, Vector3(-0.16, -0.72, -0.48), Vector3(-104, 32, 88), true],
+	[0.56, SHAFT_REST_POS, SHAFT_REST_ROT, true],
+]
+## B: the combo's backhand, wound back across the body, then a flat sweep left to right. Hits at SWING_B_HIT.
+const SWING_B := [
+	[0.09, Vector3(-0.24, -0.46, -0.4), Vector3(-34, 34, 72), true],
+	[0.13, Vector3(0.12, -0.42, -0.76), Vector3(-82, 6, 6), false],
+	[0.17, Vector3(0.5, -0.46, -0.6), Vector3(-92, -24, -62), false],
+	[0.29, Vector3(0.64, -0.54, -0.42), Vector3(-86, -32, -86), true],
+	[0.68, SHAFT_REST_POS, SHAFT_REST_ROT, true],
+]
+const SWING_A_HIT := 0.1
+const SWING_B_HIT := 0.13
+const ATTACK_BUFFER := 0.2        # a press this close to the end of a cooldown is queued
 
 signal health_changed(value: float, max_value: float)
 ## After die(): back on the ground at `at` (a checkpoint, or a respawn point after a health death).
@@ -35,6 +56,11 @@ signal inventory_changed
 @export var attack_force := 14.0
 ## Health taken off an enemy per swing (the surface hostiles have 85-100: three or four hits).
 @export var attack_damage := 30.0
+## v19 combo: a second swing within combo_window of the first one's cooldown ending is a backhand that does
+## combo_mult x the damage (and shoves harder); it ends the chain and takes combo_cooldown to recover.
+@export var combo_window := 0.6
+@export var combo_mult := 1.25
+@export var combo_cooldown := 0.6
 @export var mouse_sensitivity := 0.0012
 @export var ground_accel := 12.0
 @export var air_accel := 3.0
@@ -90,7 +116,25 @@ var _dash_cd := 0.0
 var _dash_dir := Vector3.ZERO
 var _air_dash := true
 var _attack_cd := 0.0
+var _attack_buf := 0.0
+var _combo := 0                 # swings in the current chain (1 = the next one within the window is the backhand)
+var _combo_t := 0.0             # time left to chain it (counts down once the cooldown is over)
 var _stick: Node3D
+var _stick_tw: Tween
+var _swing_keys: Array = []
+var _swing_t := -1.0            # time into the current swing; < 0 = none
+var _hitstop := 0.0             # the shaft holds still for a beat when it connects
+# v19 view model: the shaft and the rifle hang off this rig under the camera; it bobs with the walk, lags behind
+# the look, floats with jumps and dips on landing (_update_view_model).
+var _rig: Node3D
+var _bob_amt := 0.0
+var _idle_t := 0.0
+var _sway := Vector2.ZERO
+var _vm_soft := Vector3.ZERO
+var _vm_kick := 0.0
+var _vm_kick_v := 0.0
+var _punch := Vector3.ZERO      # camera kick (pitch, yaw, roll), springs back to zero: punch()
+var _punch_v := Vector3.ZERO
 var _was_floor := true
 var has_weapon := false
 var health := 100.0
@@ -134,6 +178,20 @@ var _wing_tw: Tween
 var _fov_tw: Tween
 var _base_fov := 75.0
 
+# v16: the Ember rifle kit (debug only for now: console `rifle`; scripts/ember_rifle.gd). While it's on: LMB fan
+# hipfire, RMB aim + charge (release fires), Q = back leap (long and low; finishes a reload), no Shift dash.
+const EmberRifle := preload("res://scripts/ember_rifle.gd")
+@export var leap_speed := 10.5        # m/s back along the ground
+@export var leap_up := 3.6            # m/s up: a low arc, ~7 m long
+@export var leap_cooldown := 0.9
+const LEAP_TIME := 1.2                # (upper bound; ends on landing)
+var rifle_kit := false
+var move_mult := 1.0                  # walk speed scale (the rifle slows you while aiming)
+var look_mult := 1.0                  # mouse look scale (narrower fov while aiming)
+var _rifle: Node3D
+var _leap_t := 0.0
+var _leap_cd := 0.0
+
 const ACTIONS := {
 	"move_forward": [KEY_W, KEY_UP],
 	"move_back": [KEY_S, KEY_DOWN],
@@ -160,6 +218,9 @@ func _ready() -> void:
 	_shake_noise.frequency = 0.25
 	_shake_noise.seed = randi()
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	_rig = Node3D.new()
+	_rig.name = "ViewModel"
+	camera.add_child(_rig)
 	has_weapon = GameState.get_value("has_weapon", false)
 	health = clampf(GameState.get_value("health", max_health), 1.0, max_health)
 	health_changed.emit.call_deferred(health, max_health)
@@ -167,6 +228,8 @@ func _ready() -> void:
 		_make_stick()
 	has_drone = GameState.get_value("has_drone", false)
 	has_pennon = GameState.get_value("has_pennon", false)
+	if GameState.get_value("rifle_kit", false):
+		set_rifle_kit.call_deferred(true)
 	_base_fov = camera.fov
 	shield = clampf(GameState.get_value("shield", shield_max), 0.0, shield_max) if has_drone else 0.0
 	_add_shield_arc()
@@ -286,11 +349,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not input_enabled:
 		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		rotate_y(-event.relative.x * mouse_sensitivity)
-		head.rotate_x(-event.relative.y * mouse_sensitivity)
+		rotate_y(-event.relative.x * mouse_sensitivity * look_mult)
+		head.rotate_x(-event.relative.y * mouse_sensitivity * look_mult)
 		head.rotation.x = clamp(head.rotation.x, deg_to_rad(-88), deg_to_rad(88))
+		_sway += (event.relative as Vector2) * 0.0006 * look_mult
 	elif event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	elif rifle_kit and _rifle_input(event):
+		pass
 	elif event.is_action_pressed("attack"):
 		attack()
 	elif event.is_action_pressed("dash"):
@@ -317,7 +383,18 @@ func _physics_process(delta: float) -> void:
 		return
 	_ladder_block = maxf(0.0, _ladder_block - delta)
 	_dash_cd = maxf(0.0, _dash_cd - delta)
-	_attack_cd = maxf(0.0, _attack_cd - delta)
+	if _attack_cd > 0.0:
+		_attack_cd = maxf(0.0, _attack_cd - delta)
+	elif _combo_t > 0.0:
+		_combo_t -= delta
+		if _combo_t <= 0.0:
+			_combo = 0
+	if _attack_buf > 0.0:
+		_attack_buf -= delta
+		if _attack_cd <= 0.0:
+			_attack_buf = 0.0
+			attack()
+	_leap_cd = maxf(0.0, _leap_cd - delta)
 	_jump_held = Input.is_action_pressed("jump")
 	_coyote = coyote_time if is_on_floor() else maxf(0.0, _coyote - delta)
 	if Input.is_action_just_pressed("jump"):
@@ -411,16 +488,103 @@ func is_alive() -> bool:
 func shake(amount: float) -> void:
 	_trauma = clampf(_trauma + amount, 0.0, 1.0)
 
+## A kick to the view (radians/s of pitch, yaw, roll) that springs back: swings, shots.
+func punch(v: Vector3) -> void:
+	_punch_v += v
+
 func _process(delta: float) -> void:
-	if _trauma <= 0.0:
+	var dt := minf(delta, 0.05)
+	_animate_swing(delta)
+	_update_view_model(dt)
+	_punch_v += (-_punch * 170.0 - _punch_v * 18.0) * dt
+	_punch += _punch_v * dt
+	var rot := _punch
+	if _trauma > 0.0:
+		_trauma = maxf(0.0, _trauma - delta * 1.6)
+		_shake_t += delta * 60.0
+		var k := _trauma * _trauma
+		camera.h_offset = _shake_noise.get_noise_2d(_shake_t, 0.0) * 0.14 * k
+		camera.v_offset = _shake_noise.get_noise_2d(0.0, _shake_t) * 0.1 * k
+		rot += Vector3(_shake_noise.get_noise_2d(_shake_t, 50.0) * 0.05, _shake_noise.get_noise_2d(50.0, _shake_t) * 0.05,
+			_shake_noise.get_noise_2d(_shake_t, 100.0) * 0.09) * k
+	camera.rotation = rot
+
+## The rig the held weapons hang from: walk bob (a smile-shaped arc, down in the middle of each step, side to side
+## every two), breathing at rest, lag behind the look, floating with the jump arc and a dip on landing.
+## Mostly damped while aiming the rifle.
+func _update_view_model(dt: float) -> void:
+	if _rig == null:
 		return
-	_trauma = maxf(0.0, _trauma - delta * 1.6)
-	_shake_t += delta * 60.0
-	var k := _trauma * _trauma
-	camera.h_offset = _shake_noise.get_noise_2d(_shake_t, 0.0) * 0.14 * k
-	camera.v_offset = _shake_noise.get_noise_2d(0.0, _shake_t) * 0.1 * k
-	camera.rotation = Vector3(_shake_noise.get_noise_2d(_shake_t, 50.0) * 0.05, _shake_noise.get_noise_2d(50.0, _shake_t) * 0.05,
-		_shake_noise.get_noise_2d(_shake_t, 100.0) * 0.09) * k
+	var hs := Vector2(velocity.x, velocity.z).length()
+	var walking := is_on_floor() and not gliding and not is_on_ladder() and _dash_t <= 0.0
+	_bob_amt = lerpf(_bob_amt, clampf(hs / walk_speed, 0.0, 1.4) if walking else 0.0, 1.0 - exp(-dt * 8.0))
+	var aim := float(_rifle.get("aim_blend")) if _rifle else 0.0
+	var k := _bob_amt * (1.0 - 0.85 * aim)
+	_idle_t += dt
+	var still := (1.0 - minf(_bob_amt, 1.0)) * (1.0 - 0.7 * aim)
+	var s := sin(_bob_t)
+	var c := cos(_bob_t)
+	var pos := Vector3(s * 0.018, -c * c * 0.028 + 0.014, 0.0) * k
+	var rot := Vector3(c * c * 0.03, s * 0.012, -s * 0.035) * k
+	pos += Vector3(sin(_idle_t * 0.9) * 0.002, sin(_idle_t * 1.7) * 0.004, 0.0) * still
+	# look lag: the weapon trails the turn and catches up
+	_sway = _sway.lerp(Vector2.ZERO, 1.0 - exp(-dt * 9.0)).clamp(Vector2(-0.07, -0.07), Vector2(0.07, 0.07))
+	var sw := _sway * (1.0 - 0.8 * aim)
+	pos += Vector3(-sw.x * 0.45, sw.y * 0.45, 0.0)
+	rot += Vector3(sw.y * 0.9, sw.x * 0.9, sw.x * 0.5)
+	# rising: it sinks; falling: it floats up; dashing: it pulls back
+	var want := Vector3.ZERO
+	if not is_on_floor() and not gliding:
+		want.y = clampf(-velocity.y * 0.005, -0.03, 0.035)
+	if _dash_t > 0.0:
+		want += Vector3(0.0, -0.025, 0.07)
+	_vm_soft = _vm_soft.lerp(want, 1.0 - exp(-dt * 10.0))
+	_vm_kick_v += (-_vm_kick * 200.0 - _vm_kick_v * 16.0) * dt
+	_vm_kick += _vm_kick_v * dt
+	_rig.position = pos + _vm_soft + Vector3(0.0, _vm_kick, 0.0)
+	_rig.rotation = rot + Vector3(_vm_kick * 0.8, 0.0, 0.0)
+
+## Plays the current swing (_swing_keys) on the shaft. Holds still during a hitstop.
+func _animate_swing(delta: float) -> void:
+	if _swing_t < 0.0 or _stick == null:
+		return
+	if _hitstop > 0.0:
+		_hitstop -= delta
+		return
+	_swing_t += delta
+	var n := _swing_keys.size()
+	if _swing_t >= float(_swing_keys[n - 1][0]):
+		_stick.position = _swing_keys[n - 1][1]
+		_stick.rotation_degrees = _swing_keys[n - 1][2]
+		_swing_t = -1.0
+		return
+	var i := 0
+	while float(_swing_keys[i + 1][0]) < _swing_t:
+		i += 1
+	_stick.position = _swing_curve(i, 1, _swing_t)
+	_stick.rotation_degrees = _swing_curve(i, 2, _swing_t)
+
+## Cubic Hermite between keys i and i+1 of field f; Catmull-Rom tangents (non-uniform times), zero at stop keys.
+func _swing_curve(i: int, f: int, t: float) -> Vector3:
+	var k0: Array = _swing_keys[i]
+	var k1: Array = _swing_keys[i + 1]
+	var t0: float = k0[0]
+	var t1: float = k1[0]
+	var p0: Vector3 = k0[f]
+	var p1: Vector3 = k1[f]
+	var h := t1 - t0
+	var u := (t - t0) / h
+	var m0 := Vector3.ZERO
+	if i > 0 and not k0[3]:
+		var kp: Array = _swing_keys[i - 1]
+		m0 = (p1 - (kp[f] as Vector3)) / (t1 - float(kp[0]))
+	var m1 := Vector3.ZERO
+	if i + 2 < _swing_keys.size() and not k1[3]:
+		var kn: Array = _swing_keys[i + 2]
+		m1 = ((kn[f] as Vector3) - p0) / (float(kn[0]) - t0)
+	var u2 := u * u
+	var u3 := u2 * u
+	return p0 * (2.0 * u3 - 3.0 * u2 + 1.0) + m0 * h * (u3 - 2.0 * u2 + u) + p1 * (3.0 * u2 - 2.0 * u3) + m1 * h * (u3 - u2)
 
 # ---------------------------------------------------------------- health
 func _set_health(v: float) -> void:
@@ -625,6 +789,17 @@ func _ground_physics(delta: float, input_dir: Vector2) -> void:
 		move_and_slide()
 		_push_bodies(delta)
 		return
+	if _leap_t > 0.0:   # v16 back leap: a long low arc; momentum kept, no jump cut, steering only nudges it
+		_leap_t -= delta
+		velocity.y -= gravity * (fall_gravity_mult if velocity.y < 0.0 else 1.0) * delta
+		var steer := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)) * walk_speed
+		velocity.x += steer.x * delta * 0.8
+		velocity.z += steer.z * delta * 0.8
+		move_and_slide()
+		_push_bodies(delta)
+		if is_on_floor() and _leap_t < LEAP_TIME - 0.1:
+			_leap_t = 0.0
+		return
 	if not is_on_floor():
 		var g := gravity
 		if velocity.y < 0.0:
@@ -640,7 +815,7 @@ func _ground_physics(delta: float, input_dir: Vector2) -> void:
 		_coyote = 0.0
 	var dir := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	var accel := ground_accel if is_on_floor() else air_accel
-	var target := dir * walk_speed
+	var target := dir * walk_speed * move_mult
 	velocity.x = lerp(velocity.x, target.x, clamp(accel * delta, 0.0, 1.0))
 	velocity.z = lerp(velocity.z, target.z, clamp(accel * delta, 0.0, 1.0))
 	_try_step_up(delta)
@@ -696,7 +871,7 @@ func _end_glide() -> void:
 		_wing_tw.chain().tween_callback(func():
 			_wing.visible = false
 			if _stick:
-				_stick.visible = true)
+				_stick.visible = not rifle_kit)
 	if _fov_tw:
 		_fov_tw.kill()
 	_fov_tw = create_tween()
@@ -732,9 +907,71 @@ func _glide_physics(delta: float, input_dir: Vector2) -> void:
 		_wing.rotation.z = lerpf(_wing.rotation.z, -input_dir.x * 0.18 + sin(_glide_t * 2.3) * 0.025, clampf(delta * 6.0, 0.0, 1.0))
 		_wing.position.y = WING_POS.y + sin(_glide_t * 3.1) * 0.012 if not (_wing_tw and _wing_tw.is_running()) else _wing.position.y
 
+# ---------------------------------------------------------------- v16: the Ember rifle kit
+## Swap the shaft for the rifle (or back). Kept in GameState so it survives scene changes.
+func set_rifle_kit(on: bool) -> void:
+	rifle_kit = on
+	GameState.set_value("rifle_kit", on)
+	if on:
+		if _rifle == null:
+			_rifle = EmberRifle.new()
+			_rifle.set("player", self)
+			_rig.add_child(_rifle)
+		if _stick:
+			_stick.visible = false
+	else:
+		if _rifle:
+			_rifle.queue_free()
+			_rifle = null
+		if _stick:
+			_stick.visible = true
+		move_mult = 1.0
+		look_mult = 1.0
+
+## The rifle kit's controls; true when the event was used.
+func _rifle_input(event: InputEvent) -> bool:
+	if _rifle == null:
+		return false
+	if event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		if mb.button_index == MOUSE_BUTTON_LEFT:
+			if mb.pressed:
+				_rifle.call("hipfire")
+			return true
+		if mb.button_index == MOUSE_BUTTON_RIGHT:
+			if mb.pressed:
+				_rifle.call("aim_press")
+			else:
+				_rifle.call("aim_release")
+			return true
+	if event.is_action_pressed("attack"):        # Q (LMB was caught above)
+		back_leap()
+		return true
+	if event.is_action_pressed("dash"):          # no dash in this kit
+		return true
+	return false
+
+## Q in the rifle kit: a long, low hop straight back (away from where you look). Finishes a reload.
+func back_leap() -> bool:
+	if not input_enabled or gliding or _leap_cd > 0.0 or is_on_ladder() or not (is_on_floor() or _coyote > 0.0):
+		return false
+	var back := Vector3(global_basis.z.x, 0, global_basis.z.z).normalized()
+	velocity = back * leap_speed + Vector3.UP * leap_up
+	_leap_t = LEAP_TIME
+	_leap_cd = leap_cooldown
+	_coyote = 0.0
+	_jump_buf = 0.0
+	if _rifle:
+		_rifle.call("finish_reload")
+	shake(0.08)
+	var k := create_tween()        # the view tips back a touch with the push
+	k.tween_property(camera, "position:z", 0.06, 0.08)
+	k.tween_property(camera, "position:z", 0.0, 0.3).set_trans(Tween.TRANS_SINE)
+	return true
+
 # ---------------------------------------------------------------- dash + stick
 func dash() -> void:
-	if not input_enabled or gliding or _dash_cd > 0.0 or is_on_ladder() or (not is_on_floor() and not _air_dash):
+	if not input_enabled or rifle_kit or gliding or _dash_cd > 0.0 or is_on_ladder() or (not is_on_floor() and not _air_dash):
 		return
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	if input_dir == Vector2.ZERO:
@@ -754,7 +991,7 @@ func _make_stick() -> void:
 		return
 	_stick = Node3D.new()
 	_stick.name = "Shaft"
-	camera.add_child(_stick)
+	_rig.add_child(_stick)
 	_stick.position = SHAFT_REST_POS
 	_stick.rotation_degrees = SHAFT_REST_ROT
 	var model: Node3D = load(SHAFT_MODEL).instantiate()
@@ -783,36 +1020,56 @@ func give_weapon(quiet := false) -> void:
 		return
 	_stick.position = SHAFT_REST_POS + Vector3(0.1, -0.7, 0.2)
 	_stick.rotation_degrees = SHAFT_REST_ROT + Vector3(40, 0, -30)
-	var tw := create_tween().set_parallel()
-	tw.tween_property(_stick, "position", SHAFT_REST_POS, 0.55).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(_stick, "rotation_degrees", SHAFT_REST_ROT, 0.6).set_trans(Tween.TRANS_SINE)
+	_swing_t = -1.0
+	if _stick_tw:
+		_stick_tw.kill()
+	_stick_tw = create_tween().set_parallel()
+	_stick_tw.tween_property(_stick, "position", SHAFT_REST_POS, 0.55).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_stick_tw.tween_property(_stick, "rotation_degrees", SHAFT_REST_ROT, 0.6).set_trans(Tween.TRANS_SINE)
 
-## Swing the shaft: short-range box check in front of the player. Needs the weapon.
+## Swing the shaft: short-range box check in front of the player. Needs the weapon. The first swing is a forehand;
+## another within combo_window after its cooldown is the backhand (combo_mult damage), which ends the chain.
+## A press during the last ATTACK_BUFFER s of a cooldown is queued (returns false; the swing follows).
 func attack() -> bool:
-	if not input_enabled or _attack_cd > 0.0 or not has_weapon or gliding:
+	if not input_enabled or not has_weapon or gliding:
 		return false
-	_attack_cd = attack_cooldown
+	if _attack_cd > 0.0:
+		if _attack_cd <= ATTACK_BUFFER:
+			_attack_buf = ATTACK_BUFFER
+		return false
+	_attack_buf = 0.0
+	var backhand := _combo == 1 and _combo_t > 0.0
+	_combo = 0 if backhand else 1
+	_combo_t = 0.0 if backhand else combo_window
+	_attack_cd = combo_cooldown if backhand else attack_cooldown
 	if _stick == null:
 		_make_stick()
-	# wind-up, diagonal strike from upper right to lower left, recover
-	var tw := create_tween()
-	tw.tween_property(_stick, "rotation_degrees", SHAFT_REST_ROT + Vector3(18, -10, -14), 0.05).set_trans(Tween.TRANS_SINE)
-	tw.parallel().tween_property(_stick, "position", SHAFT_REST_POS + Vector3(0.06, 0.04, 0.05), 0.05)
-	tw.tween_property(_stick, "rotation_degrees", Vector3(-95, 25, 75), 0.09).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	tw.parallel().tween_property(_stick, "position", Vector3(0.05, -0.5, -0.62), 0.09).set_trans(Tween.TRANS_QUAD)
-	tw.tween_property(_stick, "rotation_degrees", SHAFT_REST_ROT, 0.26).set_trans(Tween.TRANS_SINE)
-	tw.parallel().tween_property(_stick, "position", SHAFT_REST_POS, 0.26).set_trans(Tween.TRANS_SINE)
-	await get_tree().create_timer(0.1).timeout
+	if _stick_tw:
+		_stick_tw.kill()
+	# from wherever the shaft is (still recovering from the last swing, say) through the swing's keys
+	_swing_keys = [[0.0, _stick.position, _stick.rotation_degrees, true]] + (SWING_B if backhand else SWING_A)
+	_swing_t = 0.0
+	_hitstop = 0.0
+	var flat := Vector3(-global_basis.z.x, 0, -global_basis.z.z).normalized()
+	if backhand and is_on_floor() and _dash_t <= 0.0:
+		velocity += flat * 2.4           # a short step into it
+	await get_tree().create_timer(SWING_B_HIT if backhand else SWING_A_HIT).timeout
+	# the view leans with the stroke: the forehand cuts down to the left, the backhand sweeps right
+	punch(Vector3(0.1, -0.6, -0.9) if backhand else Vector3(-0.35, 0.4, 0.7))
 	var fwd := -camera.global_transform.basis.z
+	flat = Vector3(fwd.x, 0, fwd.z).normalized()
 	var q := PhysicsShapeQueryParameters3D.new()
-	# body-height box in front of you, so low critters get hit as well as things at eye level
+	# body-height box in front of you, so low critters get hit as well as things at eye level; the sweep is wider
 	var bx := BoxShape3D.new()
-	bx.size = Vector3(1.2, 1.9, attack_range - 0.2)
+	bx.size = Vector3(1.6, 1.9, attack_range + 0.1) if backhand else Vector3(1.2, 1.9, attack_range - 0.2)
 	q.shape = bx
-	var flat := Vector3(fwd.x, 0, fwd.z).normalized()
 	q.transform = Transform3D(global_transform.basis, global_position + flat * (0.2 + bx.size.z * 0.5) + Vector3.UP * 0.95)
 	q.collision_mask = 1 | 8
 	q.exclude = [get_rid()]
+	var keep := attack_damage
+	if backhand:
+		attack_damage = keep * combo_mult      # take_hit() reads it off the player
+	var force := attack_force * (1.4 if backhand else 1.0)
 	var hit := false
 	for r in get_world_3d().direct_space_state.intersect_shape(q, 32):   # the floor and walls fill results too
 		var c: Object = r.collider
@@ -820,16 +1077,20 @@ func attack() -> bool:
 			c.take_hit(self, fwd)
 			hit = true
 		elif c is RigidBody3D:
-			(c as RigidBody3D).apply_central_impulse(Vector3(fwd.x, 0.25, fwd.z).normalized() * attack_force * (c as RigidBody3D).mass * 0.45)
+			(c as RigidBody3D).apply_central_impulse(Vector3(fwd.x, 0.25, fwd.z).normalized() * force * (c as RigidBody3D).mass * 0.45)
 			hit = true
+	attack_damage = keep
 	if hit:
-		shake(0.2)
+		_hitstop = 0.075 if backhand else 0.055
+		shake(0.3 if backhand else 0.2)
+		punch(Vector3(-0.6, 0.0, 0.0) if backhand else Vector3(-0.4, 0.0, 0.0))
 		var k := create_tween()
-		k.tween_property(head, "position:z", head.position.z + 0.04, 0.04)
+		k.tween_property(head, "position:z", head.position.z + (0.06 if backhand else 0.04), 0.04)
 		k.tween_property(head, "position:z", head.position.z, 0.1)
 	return hit
 
 func _land_dip() -> void:
+	_vm_kick_v -= 0.9
 	var tw := create_tween()
 	tw.tween_property(head, "position:y", 1.5, 0.06)
 	tw.tween_property(head, "position:y", 1.62, 0.18).set_trans(Tween.TRANS_SINE)
