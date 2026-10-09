@@ -7,6 +7,8 @@ extends Node
 
 const SHADER := preload("res://scripts/painterly_world.gdshader")
 const BRUSH := preload("res://assets/creatures/sph_paint_brush.png")
+## v18 weathering: terrain height map (tools/bake_ground.gd) for the grime near the ground; none = no grime.
+@export var ground_map: Texture2D = preload("res://assets/map/surface_ground.res")
 
 ## Per-material tweaks by the glb's material name (shader uniform -> value).
 const TUNE := {
@@ -14,28 +16,68 @@ const TUNE := {
 	"M_Grate": {"detail_amt": 0.6, "broad_blur": 2.0},      # the grating's holes are its whole look
 	"M_Hazard": {"detail_amt": 0.6, "broad_blur": 2.0, "smear": 0.012},
 	"M_Corrugated": {"detail_amt": 0.5},
-	"M_Spire": {"bands": 2.0, "step_mix": 0.4, "rim_amt": 0.0},
-	"M_Silhouette": {"rim_amt": 0.0},
-	"M_Grass": {"step_mix": 0.3, "spec_amt": 0.0},
-	"M_GrassDry": {"step_mix": 0.3, "spec_amt": 0.0},
+	"M_Spire": {"bands": 2.0, "step_mix": 0.4, "rim_amt": 0.0, "weather": 0.0},
+	"M_Silhouette": {"rim_amt": 0.0, "weather": 0.0},
+	"M_Grass": {"step_mix": 0.3, "spec_amt": 0.0, "weather": 0.0},
+	"M_GrassDry": {"step_mix": 0.3, "spec_amt": 0.0, "weather": 0.0},
+	"M_TuftGreen": {"step_mix": 0.3, "spec_amt": 0.0, "rim_amt": 0.0, "weather": 0.0},     # v17 clutter tufts
+	"M_TuftDry": {"step_mix": 0.3, "spec_amt": 0.0, "rim_amt": 0.0, "weather": 0.0},
+	"M_Ivy": {"weather": 0.0}, "M_IvyLight": {"weather": 0.0}, "M_Shrub": {"weather": 0.0}, "M_ShrubDry": {"weather": 0.0},
+	"M_TreeLeaf": {"weather": 0.0}, "M_Bark": {"weather": 0.4},
+	"M_ClutterRock": {"streak_amt": 0.0, "grime_amt": 0.25, "spec_amt": 0.0},     # (flat facets flash with the highlight)
+	"M_Rock": {"streak_amt": 0.0, "grime_amt": 0.25},
 }
 
 var _cache := {}
+var _noise: NoiseTexture2D
+var _mesh_cache := {}      # source mesh -> painted copy (MultiMesh meshes have no per-instance override)
 var _two_sided: Shader
 
 func _ready() -> void:
 	_two_sided = Shader.new()
 	_two_sided.code = SHADER.code.replace("shader_type spatial;", "shader_type spatial;\nrender_mode cull_disabled;")
+	_noise = NoiseTexture2D.new()          # v18: weathering noise (seamless, tiles over tens of metres in the shader)
+	_noise.width = 256
+	_noise.height = 256
+	_noise.seamless = true
+	_noise.generate_mipmaps = true
+	var fn := FastNoiseLite.new()
+	fn.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	fn.frequency = 0.012
+	fn.fractal_octaves = 4
+	fn.seed = 18
+	_noise.noise = fn
+	_noise.normalize = true
 	get_tree().node_added.connect(_on_node_added)
 	_paint_tree.call_deferred(get_parent())
 
 func _on_node_added(n: Node) -> void:
 	if n is MeshInstance3D:
 		_paint_mesh.call_deferred(n)
+	elif n is MultiMeshInstance3D:
+		_paint_multimesh.call_deferred(n)
 
 func _paint_tree(root: Node) -> void:
 	for n in root.find_children("*", "MeshInstance3D", true, false):
 		_paint_mesh(n)
+	for n in root.find_children("*", "MultiMeshInstance3D", true, false):
+		_paint_multimesh(n)
+
+## v17: the ground clutter (scenes/surface_clutter.tscn) is MultiMeshes: swap in a painted copy of the mesh.
+func _paint_multimesh(mmi: MultiMeshInstance3D) -> void:
+	if not is_instance_valid(mmi) or not mmi.is_inside_tree() or mmi.multimesh == null or _skipped(mmi):
+		return
+	var src := mmi.multimesh.mesh as ArrayMesh
+	if src == null or _mesh_cache.values().has(src):
+		return
+	if not _mesh_cache.has(src):
+		var m: ArrayMesh = src.duplicate()
+		for s in m.get_surface_count():
+			var pm := _painted(m.surface_get_material(s))
+			if pm:
+				m.surface_set_material(s, pm)
+		_mesh_cache[src] = m
+	mmi.multimesh.mesh = _mesh_cache[src]
 
 func _paint_mesh(mi: MeshInstance3D) -> void:
 	if not is_instance_valid(mi) or not mi.is_inside_tree() or mi.mesh == null or _skipped(mi):
@@ -71,6 +113,12 @@ func _painted(src: Material) -> Material:
 		m = ShaderMaterial.new()
 		m.shader = _two_sided if sm.cull_mode == BaseMaterial3D.CULL_DISABLED else SHADER
 		m.set_shader_parameter("brush", BRUSH)
+		m.set_shader_parameter("weather_noise", _noise)
+		if ground_map:
+			var area: Rect2 = ground_map.get_meta("area", Rect2())
+			m.set_shader_parameter("use_ground", area.size != Vector2.ZERO)
+			m.set_shader_parameter("ground_tex", ground_map)
+			m.set_shader_parameter("ground_rect", Vector4(area.position.x, area.position.y, area.size.x, area.size.y))
 		m.set_shader_parameter("tint", sm.albedo_color)
 		m.set_shader_parameter("uv_scale", sm.uv1_scale)
 		m.set_shader_parameter("uv_offset", sm.uv1_offset)

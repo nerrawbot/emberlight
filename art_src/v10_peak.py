@@ -799,6 +799,30 @@ def fpos(face, t, z, off=0.0):
 
 ROUTE = dict(ladders=[], checkpoints=[], pieces=[])
 
+# v19: the signal climb. Each band's puzzle (scripts/mast_signal.gd) opens the next stage: these route pieces are built
+# walkable in temp collections of their own and become moving objects (origin on the hinge), listed in peak.json
+# mast.gates. Godot puts them in the closed pose until the band is tuned. A part: node (object name, no suffix), v (visual
+# temp collection), r (ramp temp collection or None: becomes <node>Ramps-colonly, parented to it), col (visual gets
+# -col), origin, kind ("turn": angle about axis through origin | "lift": offset), nocol (collision off while closed).
+GATE_PARTS = []
+
+def gate_part(node, stage, origin, ramp=False, col=False):
+    v = "P10_TmpG_" + node; s5coll(v)
+    r = None
+    if ramp:
+        r = "P10_TmpG_" + node + "R"; s5coll(r)
+    p = dict(node=node, stage=stage, v=v, r=r, col=col, origin=Vector(origin), kind="lift", axis=Vector((0, 0, 1)),
+             angle=0.0, offset=Vector((0, 0, 0)), nocol=False)
+    GATE_PARTS.append(p)
+    return p
+
+def gate_turn(p, axis, deg, probe, up=True):
+    """Closed = turned deg about axis through the part's origin; the sign is picked so probe (a point on the part)
+    ends up higher (up) or lower."""
+    axis = Vector(axis).normalized(); a = math.radians(deg)
+    zs = [(Matrix.Rotation(s * a, 3, axis) @ (Vector(probe) - p["origin"])).z for s in (1, -1)]
+    p.update(kind="turn", axis=axis, angle=a if (zs[0] > zs[1]) == up else -a)
+
 def mast_levels():
     """Heights of the girder rings (the band ones sit under the band floors so they don't trip anyone)."""
     zb, zc = P10["foot"], P10["cabin"]
@@ -856,9 +880,45 @@ def face_ends(face, z0, z1):
 
 OUTER = (-1,)    # stair_guards side: travelling counter-clockwise, the right-hand side is the outside
 
-def mv_stair(C, D, R, face, z0, rise, broken=False):
+def mv_stair(C, D, R, face, z0, rise, broken=False, gate=None, stage=0):
     lo, hi = face_ends(face, z0, z0 + rise)
-    if not broken:
+    d = hi - lo; hd = Vector((d.x, d.y, 0)).length
+    fwd = Vector((d.x, d.y, 0)).normalized(); side = Vector((-fwd.y, fwd.x, 0))
+    if gate and not broken:
+        # a counterweighted fire-escape section at the foot, hinged where it meets the flight: hoisted, it stands up
+        # in the way; lowered, it is just the bottom of the stair
+        m = lo + d * (4.0 / hd)
+        p = gate_part(gate, stage, m, ramp=True)
+        stairs(p["v"], lo, m, width=2.0, rampcat=p["r"])
+        stair_guards(p["r"], lo, m, 2.0, sides=OUTER)
+        member(p["v"], "M_Hazard", lo - side * 1.0 - Vector((0, 0, 0.2)), lo + side * 1.0 - Vector((0, 0, 0.2)), 0.12, 0.3, "hoist_edge")
+        for s in (-1, 1):        # the counterweight: a block on two arms past the hinge
+            member(p["v"], "M_Steel", m + side * s * 1.08 - Vector((0, 0, 0.15)), m + side * s * 1.08 + fwd * 1.4 + Vector((0, 0, 0.1)), 0.1, 0.16, "cw_arm")
+        oriented_box(p["v"], "M_Rust", m + fwd * 1.4, math.degrees(math.atan2(fwd.y, fwd.x)), (0.7, 2.5, 0.7), "counterweight", 0.03)
+        gate_turn(p, side, 80.0, lo, up=True)
+        stairs(D, m, hi, width=2.0, rampcat=R)
+        stair_guards(R, m, hi, 2.0, sides=OUTER)
+        pieces = [(lo, hi)]
+    elif gate and broken:
+        # a 5 m bite (beyond any jump or dash) bridged by a plate hinged on the lower stub: folded up, a wall
+        gap = 5.0
+        m0 = lo + d * ((hd - gap) / 2 / hd); m1 = lo + d * ((hd + gap) / 2 / hd)
+        stairs(D, lo, m0, width=2.0, rampcat=R); stairs(D, m1, hi, width=2.0, rampcat=R)
+        stair_guards(R, lo, m0, 2.0, sides=OUTER); stair_guards(R, m1, hi, 2.0, sides=OUTER)
+        p = gate_part(gate, stage, m0, ramp=True)
+        nrm = (m1 - m0).cross(side).normalized()
+        if nrm.z < 0: nrm = -nrm
+        member(p["v"], "M_Steel", m0 - nrm * 0.07, m1 - nrm * 0.07, 2.0, 0.14, "plate")
+        for s in (-1, 1):
+            member(p["v"], "M_Hazard", m0 + side * s * 0.95 - nrm * 0.1, m1 + side * s * 0.95 - nrm * 0.1, 0.12, 0.16, "plate_edge")
+        for t in (0.3, 0.7):     # cross ribs under it
+            q = m0.lerp(m1, t) - nrm * 0.22
+            member(p["v"], "M_Steel", q - side * 1.0, q + side * 1.0, 0.12, 0.16, "plate_rib")
+        member(p["r"], None, m0 - nrm * 0.06, m1 - nrm * 0.06, 2.0, 0.12, "ramp")
+        stair_guards(p["r"], m0, m1, 2.0, sides=OUTER)
+        gate_turn(p, side, 82.0, m1, up=True)
+        pieces = [(lo, m0), (m1, hi)]
+    elif not broken:
         stairs(D, lo, hi, width=2.0, rampcat=R)
         stair_guards(R, lo, hi, 2.0, sides=OUTER)
         pieces = [(lo, hi)]
@@ -875,20 +935,35 @@ def mv_stair(C, D, R, face, z0, rise, broken=False):
     ROUTE["pieces"].append(("stair" if not broken else "broken_stair", tuple(round(v, 2) for v in lo), tuple(round(v, 2) for v in hi)))
     return z0 + rise
 
-def mv_hops(C, D, face, z0, rise, target_gap=2.6):
+def mv_hops(C, D, face, z0, rise, target_gap=2.6, gate=None, stage=0, mode="lift"):
     """Hanging platforms evenly spaced along the face, each a little higher; the last jump lands on the end corner."""
     lo, hi = face_ends(face, z0, z0 + rise)
     d = Vector((hi.x - lo.x, hi.y - lo.y, 0)); span = d.length; d.normalize()
     plen = 1.8
     n = max(1, math.ceil((span - target_gap) / (plen + target_gap)))      # gaps never wider than target_gap
     gap = (span - n * plen) / (n + 1)
-    (_, _), (dx, dy), _ = FACES[face]
+    (_, _), (dx, dy), (nx, ny) = FACES[face]
+    # gated: "lift" = all platforms winched 3.2 m up together (no arms: they hang on their cables); "flap" = each one
+    # hinged on its inner edge and hanging folded down
+    lift = None
+    if gate and mode == "lift":
+        lift = gate_part(gate, stage, lo, col=True)
+        lift["offset"] = Vector((0, 0, 3.2))
     for k in range(n):
         z = z0 + rise * (k + 1) / (n + 1)
         c = lo + d * (gap * (k + 1) + plen * k + plen / 2); c = Vector((c.x, c.y, z))
         sx, sy = (plen, 2.0) if dx else (2.0, plen)
-        plat(C, D, c, sx, sy, z, "hop")
-        arm(D, c, face, z)
+        if gate and mode == "flap":
+            p = gate_part("%s_%d" % (gate, k), stage, (c.x - nx * 1.0, c.y - ny * 1.0, z), col=True)
+            plat(p["v"], D, c, sx, sy, z, "hop")
+            gate_turn(p, (dx, dy, 0), 95.0, (c.x + nx, c.y + ny, z), up=False)
+            p["nocol"] = True
+            arm(D, c, face, z)
+        elif lift:
+            plat(lift["v"], D, c, sx, sy, z, "hop")
+        else:
+            plat(C, D, c, sx, sy, z, "hop")
+            arm(D, c, face, z)
         hangers(D, c, face, z, d)
         ROUTE["pieces"].append(("hop", tuple(round(v, 2) for v in c), round(gap, 2)))
     return z0 + rise
@@ -1079,28 +1154,28 @@ def mast_route(C, D, R):
     # stage 1: band 1 (NE) -> band 2 (SE)
     z = b1
     corner_plat(C, D, (1, 1), z)
-    z = mv_stair(C, D, R, "N", z, 5.0)
+    z = mv_stair(C, D, R, "N", z, 5.0, gate="MastGate1", stage=1)
     z = mv_ladder(C, D, R, "N", z, 5.0)
     z = mv_hops(C, D, "W", z, 1.2)
     corner_plat(C, D, (-1, -1), z)
     z = mv_stair(C, D, R, "S", z, b2 - z, broken=True)
     corner_plat(C, D, (1, -1), z)
     # stage 2: band 2 (SE) -> band 3 (SW)
-    z = mv_hops(C, D, "E", z, 1.0)
+    z = mv_hops(C, D, "E", z, 1.0, gate="MastGate2", stage=2, mode="lift")
     corner_plat(C, D, (1, 1), z)
     z = mv_beam(C, D, "N", z, 3.0)
     z = mv_ladder(C, D, R, "N", z, 5.0)
     z = mv_stair(C, D, R, "W", z, b3 - z)
     corner_plat(C, D, (-1, -1), z)
     # stage 3: band 3 (SW) -> band 4 (NW)
-    z = mv_hops(C, D, "S", z, 1.0)
+    z = mv_hops(C, D, "S", z, 1.0, gate="MastGate3", stage=3, mode="flap")
     z = mv_ladder(C, D, R, "S", z, 5.0)
     z = mv_stair(C, D, R, "E", z, 4.0, broken=True)
     corner_plat(C, D, (1, 1), z)
     z = mv_stair(C, D, R, "N", z, b4 - z)
     corner_plat(C, D, (-1, 1), z)
     # stage 4: band 4 (NW) -> cabin
-    z = mv_stair(C, D, R, "W", z, 4.0, broken=True)
+    z = mv_stair(C, D, R, "W", z, 4.0, broken=True, gate="MastGate4", stage=4)
     z = mv_ladder(C, D, R, "W", z, 4.0)
     z = mv_hops(C, D, "S", z, 0.6)
     corner_plat(C, D, (1, -1), z)
@@ -1120,7 +1195,7 @@ def build_mast(C, D, R):
     """Mast parts are built round the origin (+X = towards the peak) in temp collections, then moved into place."""
     tC, tD, tR = "P10_TmpMastC", "P10_TmpMastD", "P10_TmpMastR"
     for c in (tC, tD, tR): s5coll(c)
-    ROUTE["ladders"].clear(); ROUTE["checkpoints"].clear(); ROUTE["pieces"].clear()
+    ROUTE["ladders"].clear(); ROUTE["checkpoints"].clear(); ROUTE["pieces"].clear(); GATE_PARTS.clear()
     mast_frame(tC, tD)
     b1, b2, b3, b4 = P10["bands"]
     o1 = w_at(b1) + 2.8
@@ -1159,7 +1234,24 @@ def build_mast(C, D, R):
         # (the mast frame is turned 180 deg from the hall's, so hall +Y is mast -Y: the near leg is (+w, -w))
         wires(D, [tuple(bw((17.3, 2.6 + dy, ZG + 4.6))), tuple(mw((w_at(zl), -w_at(zl) + dy, zl)))], sag=1.6)
     rot3 = MAST_XF.to_3x3()
-    return dict(cabin_door=tuple(round(v, 2) for v in mw(cab["door"])),
+    r3 = lambda v, n=3: tuple(round(x, n) for x in v)
+    gates = []
+    for p in GATE_PARTS:         # v19: the gated route pieces become moving objects, origin on the hinge
+        for c in (p["v"], p["r"]):
+            if c:
+                for o in bpy.data.collections[c].objects:
+                    xf_obj(o, MAST_XF)
+        org = mw(p["origin"])
+        vis = own_object(p["node"] + ("-col" if p["col"] else ""), p["v"], org)
+        if p["r"]:
+            rr = own_object(p["node"] + "Ramps-colonly", p["r"], org); rr.data.materials.clear()
+            rr.parent = vis; rr.matrix_parent_inverse = Matrix.Translation(-org)
+        gates.append(dict(node=p["node"], stage=p["stage"], kind=p["kind"], origin=r3(org), axis=r3(rot3 @ p["axis"], 4),
+                          angle=round(p["angle"], 4), offset=r3(rot3 @ p["offset"]), nocol=p["nocol"], ramp=bool(p["r"])))
+    # the station keeper (a watcher) on band 1, by where the gantry comes in, looking out over it
+    o1 = w_at(P10["bands"][0]) + 2.8
+    signal = dict(sentinel=r3(mw((o1 - 1.8, 3.0, P10["bands"][0]))), sentinel_look=r3(mw((o1 + 4.0, -1.0, P10["bands"][0]))))
+    return dict(gates=gates, signal=signal, cabin_door=tuple(round(v, 2) for v in mw(cab["door"])),
                 lamps=[tuple(round(v, 2) for v in mw(p)) for p in cab["lamps"]],
                 ladders=[dict(bottom=tuple(round(v, 2) for v in mw(l["bottom"])), top=l["top"],
                               normal=tuple(round(v, 4) for v in (MAST_XF.to_3x3() @ Vector((l["normal"][0], l["normal"][1], 0)))[:2]))
@@ -1295,6 +1387,8 @@ def build_all(check_floaters=False):
     for c in (C, W, D, R): s5coll(c)
     for n in ("BossGate-col", "ExitGate-col", "HiddenDoor-col"):
         if n in bpy.data.objects: bpy.data.objects.remove(bpy.data.objects[n], do_unlink=True)
+    for o in [o for o in bpy.data.objects if o.name.startswith("MastGate")]:
+        bpy.data.objects.remove(o, do_unlink=True)
     plateau(C)
     mast_foot(C)
     scenery = plateau_dressing(C, W, D)
@@ -1332,7 +1426,7 @@ EXPORT = ["Peak-col", "PeakWorks-col", "PeakDetail", "PeakRamps-colonly", "Mast-
 def export_all():
     sc = bpy.data.scenes["Peak10"]
     for o in sc.objects:
-        o.select_set(o.name in EXPORT)
+        o.select_set(o.name in EXPORT or o.name.startswith("MastGate"))
     bpy.ops.export_scene.gltf(filepath=os.path.join(PROJ, "assets", "level", "peak.glb"), export_format='GLB', use_selection=True,
                               use_active_scene=True, export_apply=True, export_yup=True,
                               export_vertex_color='NAME', export_vertex_color_name='TerrainMask')

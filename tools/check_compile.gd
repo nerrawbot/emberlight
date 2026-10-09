@@ -7,7 +7,7 @@ func _init() -> void:
 	for a in OS.get_cmdline_user_args():
 		paths.append(a)
 	if paths.is_empty():
-		for d in ["res://scripts", "res://scripts/creatures", "res://scripts/dialogue", "res://tools"]:
+		for d in ["res://scripts", "res://scripts/creatures", "res://scripts/dialogue", "res://scripts/mast", "res://tools"]:
 			for f in DirAccess.get_files_at(d):
 				if f.ends_with(".gd"):
 					paths.append(d + "/" + f)

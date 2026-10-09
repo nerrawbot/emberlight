@@ -5,21 +5,25 @@ extends CanvasLayer
 ##   tools\godot.cmd res://scenes/start.tscn -- --boss
 
 const GameState := preload("res://scripts/game_state.gd")
-const SCENES := {"start": "res://scenes/start.tscn", "main": "res://scenes/main.tscn", "surface": "res://scenes/surface.tscn"}
+const SCENES := {"start": "res://scenes/start.tscn", "main": "res://scenes/main.tscn", "surface": "res://scenes/surface.tscn",
+	"ember": "res://scenes/ember.tscn"}
 const HELP := """boss            surface, outside the Peak hall: weapon, drone, full health/shield, fresh boss
 god             toggle: no damage
 heal            full health + shield
 weapon / drone  give the shaft / the warden drone (shield)
 pennon          give the Pennon (glide: [Space] mid-air from 3 m up)
+rifle           toggle the Ember rifle kit (LMB fan, RMB aim+charge, Q back leap)
 annex           boss already beaten, doors open: stand in the annex by the Pennon's plinth
 station         stand in the cable car at the Peak's station (surface)
+mast [1-6]      boss down, Pennon in hand: stand on mast band n (5 = cabin, 6 = crow's nest, relay tuned), bands below it tuned
+tune <1-4|all>  tune a mast band now (opens its stage, as its puzzle would)
 give <id> [n]   add an item (tokens, scrap, bars, voltaic_core, station_pass_sealed, station_pass)
 tp <node>       stand on a node by name (CP_HallEntrance, AtMast, FromLift...)  |  tp <x> <y> <z>
 pos             print your position
 bosshp <pct>    set the boss's health % (runs its phase / seize-up checks; start the fight first)
 fight           start the boss fight now (you must be on the surface)
 kill            kill every hostile but the boss
-scene <name>    start | main | surface
+scene <name>    start | main | surface | ember
 clear           clear this log"""
 
 var player: CharacterBody3D
@@ -139,8 +143,23 @@ func _run(text: String) -> void:
 		"pennon":
 			player.call("give_pennon")
 			_print("Pennon in hand: [Space] mid-air from a height")
+		"rifle":
+			var on := not bool(player.get("rifle_kit"))
+			player.call("set_rifle_kit", on)
+			_print("Ember rifle " + ("on: LMB fan, RMB aim + charge (release fires), Q back leap" if on else "off: shaft back"))
 		"annex":
 			_annex()
+		"mast":
+			_mast(clampi(int(a[1]) if a.size() > 1 else 1, 1, 6))
+		"tune":
+			var sig := get_tree().get_first_node_in_group("mast_signal")
+			if sig == null:
+				_print("no mast here (mast)")
+				return
+			var which: Array = [1, 2, 3, 4] if a.size() < 2 or a[1] == "all" else [int(a[1])]
+			for s: int in which:
+				sig.call("tune", s)
+			_print("tuned %s" % str(which))
 		"station":
 			if get_tree().current_scene and get_tree().current_scene.find_child("CableStation", false, false):
 				_tp_node("FromCableCar")
@@ -200,6 +219,17 @@ func _annex() -> void:
 	GameState.take("peak_boss_husk")
 	GameState.take("car_ride")
 	GameState.set_value("debug_goto", "AnnexStand")
+	_change(SCENES["surface"])
+
+## The mast climb from band n: everything before it done (bands below n tuned), the rest of the climb untouched.
+func _mast(n: int) -> void:
+	var keys: Array = ["mast_power", "mast_freq", "mast_bearing", "mast_gain"]
+	var st := {"has_weapon": true, "peak_boss_down": true, "station_gate_open": true, "has_pennon": true, "mast_final": n >= 6}
+	for i in keys.size():
+		st[keys[i]] = i < n - 1
+	GameState.merge(st)
+	GameState.take("car_ride")
+	GameState.set_value("debug_goto", "B6Nest" if n == 6 else ("CP_Cabin" if n == 5 else "CP_Band%d" % n))
 	_change(SCENES["surface"])
 
 func _change(path: String) -> void:

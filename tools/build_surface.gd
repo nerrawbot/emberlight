@@ -62,10 +62,16 @@ func _init() -> void:
 	build_stairs()
 	build_safety()
 	build_particles()
+	build_cloud_sea()
 	build_exits_and_spawns()
 	build_peak()
 	build_station()
 	build_story()
+	if ResourceLoader.exists("res://scenes/surface_clutter.tscn"):     # v17 ground clutter (tools/bake_clutter.gd)
+		var clutter: Node = load("res://scenes/surface_clutter.tscn").instantiate()
+		add(main_root, clutter)
+	if ResourceLoader.exists("res://scenes/surface_decals.tscn"):      # v18 wall decals (tools/bake_decals.gd)
+		add(main_root, load("res://scenes/surface_decals.tscn").instantiate())
 	var paint := Node.new()        # last, so it repaints after everything else is in (painterly_world.gd)
 	paint.name = "PainterlyWorld"
 	paint.set_script(load("res://scripts/painterly_world.gd"))
@@ -397,6 +403,38 @@ func build_particles() -> void:
 		add(g, e)
 		k += 1
 
+# ------------------------------------------------------------------ cloud sea: a deck of haze the spires and cliffs sink into
+# (they used to end in mid-air: the spires stop at Blender z -90, the cliff at ~-86). A solid layer at y 0, thinning drifting
+# wisps above it, all under TheDrop (y 10..14) so the player never sees them from below. cloud_sea.gdshader.
+func build_cloud_sea() -> void:
+	var g := group(main_root, "CloudSea")
+	var sh := load("res://scripts/cloud_sea.gdshader")
+	var pm := PlaneMesh.new()
+	pm.size = Vector2(3200, 3200)            # the spires stand up to ~650 m out; scene fog hides the far edge
+	# [y, cover, base_alpha, opacity, scale, drift, seed]
+	var layers := [[0.0, 0.42, 1.0, 1.0, 0.004, Vector2(0.4, 0.15), 0.0],
+		[5.0, 0.48, 0.0, 0.8, 0.006, Vector2(0.7, 0.25), 1.0],
+		[10.0, 0.56, 0.0, 0.55, 0.009, Vector2(1.0, 0.4), 2.0]]
+	var i := 0
+	for ly in layers:
+		var m := ShaderMaterial.new()
+		m.shader = sh
+		m.set_shader_parameter("cover", ly[1])
+		m.set_shader_parameter("base_alpha", ly[2])
+		m.set_shader_parameter("opacity", ly[3])
+		m.set_shader_parameter("scale", ly[4])
+		m.set_shader_parameter("drift", ly[5])
+		m.set_shader_parameter("seed", ly[6])
+		var mi := MeshInstance3D.new()
+		mi.name = "Layer_%d" % i
+		mi.mesh = pm
+		mi.material_override = m
+		mi.position = b2g([32.0, -6.0, ly[0]])      # under the mesa centre (v5_surface.py CENTER)
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mi.layers = 2
+		add(g, mi)
+		i += 1
+
 # ------------------------------------------------------------------ exits, spawns, player
 func spawn_marker(parent: Node, n: String, pos: Vector3, yaw: float) -> Marker3D:
 	var m := Marker3D.new()
@@ -620,16 +658,30 @@ func build_peak() -> void:
 		add(safety, a)
 		box_shape(a, c[3], Vector3(0, 1.25, 0))
 
-	# the end of the climb (for now): stepping into the radio cabin
+	# stepping into the radio cabin: its banner (v19: the relay console inside is scripts/mast/cabin_console.gd)
 	var cab: Dictionary = P["mast"]["cabin"]
 	var top := Area3D.new()
 	top.name = "MastCabin"
 	top.set_script(load("res://scripts/exit_zone.gd"))
-	top.set("message", "THE MAST\n— to be continued —")
+	top.set("message", "THE RELAY CABIN\nthe top of the Heretic's mast")
 	top.position = b2g(cab["door_inside"]) + Vector3(0, 1.2, 0)
 	top.rotation.y = yaw_of(cab["yaw_dir"])          # box Z runs across the doorway, X along the east wall
 	add(main_root, top)
 	box_shape(top, Vector3(10.0, 2.4, 3.0), Vector3.ZERO)
+
+	# v19: the signal climb (scripts/mast_signal.gd): each band's puzzle opens the next stage; the gated route pieces
+	# are in peak.glb (v10_peak.py GATE_PARTS), their closed poses go in here. SENTINEL-11 on band 1 is built at runtime.
+	var sig := Node3D.new()
+	sig.name = "MastSignal"
+	sig.set_script(load("res://scripts/mast_signal.gd"))
+	var gl: Array = []
+	for g in P["mast"]["gates"]:
+		gl.append({"node": g["node"], "stage": int(g["stage"]), "kind": g["kind"], "origin": b2g(g["origin"]),
+			"axis": b2g(g["axis"]), "angle": float(g["angle"]), "offset": b2g(g["offset"]), "nocol": bool(g["nocol"])})
+	sig.set("gates", gl)
+	sig.set("sentinel_pos", b2g(P["mast"]["signal"]["sentinel"]))
+	sig.set("sentinel_look", b2g(P["mast"]["signal"]["sentinel_look"]))
+	add(main_root, sig)
 
 	# lamps: hanging + caged wall lamps in the hall, floods on the wall tops, the landing lamp, the mast's beacons
 	var lights := group(main_root, "PeakLights")
