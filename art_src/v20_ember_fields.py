@@ -1,5 +1,5 @@
 # v20: Ember Fields building kit - the ruined farm array that rings the city of Emberlight (the old world's industrial hub).
-# Styled after the Ember Fields painting: heavy dark plated iron, stacked decks on X-braced frames, oxide-red panels,
+# Styled after the Ember Fields painting: heavy dark plated iron, stacked decks on X-braced frames, ochre-painted panels,
 # lattice masts with dangling cable, round machine drums, a few ember-lit slits still smouldering; everything toppled,
 # tilted or half sunk in the field. Pieces (each its own object + "<Name>-colonly" child, origin on the ground, Z up):
 #   FarmProcessor     stacked processing block, tilted and sunk: drum, hopper, stacks, broken conveyor arm  (~33 x 15 x 24 m)
@@ -13,10 +13,9 @@
 #   FieldBarn         timber-framed barn, plank siding, rusted roof with a fallen end bay, door off its track  (~13 x 9 x 7 m)
 #   WaterTower        wooden stave tank on a steel stand, iron hoops, burst staves, ladder                  (~7 x 7 x 17 m)
 #   FieldMarker07/12/03  the hexagonal plot markers of the array sequence (03 is tipped and chipped)       (~1.7 x 0.8 x 1.5 m)
-# Materials keep the surface's names where they share a texture (M_Steel, M_Concrete2/3, M_Grate, M_Hazard) so
-# painterly_world.gd's TUNE applies; new ones: M_EF_Iron (the rifle's er_iron map), the v20 sets graded by
-# v20_ef_textures.py (M_EF_Oxide, M_EF_Rust, M_EF_RustCoarse, M_EF_Corr, M_EF_Planks, M_EF_Timber, M_EF_PaintWood),
-# M_EF_Glow (ember slits; emissive, so the painterly pass skips it), M_EF_Lamp, M_EF_Panel, M_EF_Cable, M_EF_Paint,
+# Materials are all M_EF_* and use only the Ember Fields texture sets graded by v20_ef_textures.py (browns, ochre,
+# tarnished gold, worn steel; none of the Forsaken Debris maps): M_EF_Iron, Ochre, Brass, Rust, RustCoarse, Corr, Steel,
+# Deck, Concrete, Concrete2, Hazard, Planks, Timber, PaintWood; plus flat M_EF_Glow (ember slits; emissive, so the painterly pass skips it), M_EF_Lamp, M_EF_Panel, M_EF_Cable, M_EF_Paint,
 # M_EF_Rubber, M_EF_Dark.
 # Self-contained. Starts from an empty file, builds scene "EmberFields20" (a collection per piece under EMBER_FIELDS20,
 # plus EF_Showcase: ground, sun, camera - not exported), saves art_src/ember_fields.blend (texture paths relative) and
@@ -98,32 +97,33 @@ def flat(name, col, rough=0.9, metal=0.0, emit=None, strength=0.0, double=False)
     m.use_backface_culling = not double
     return m
 
-MAT = {
-    "iron": albedo("M_EF_Iron", "er_iron.png", 0.62, 0.45),        # dark plated hull iron
-    "oxide": pbr("M_EF_Oxide", "ef_oxide"),                        # faded oxide-red paint (v20 set)
-    "rust": pbr("M_EF_Rust", "ef_rust"),                          # v20 sets (v20_ef_textures.py)
+MAT = {   # every textured material is an Ember Fields set (v20_ef_textures.py: browns, ochre, gold, worn steel)
+    "iron": pbr("M_EF_Iron", "ef_iron"),                            # dark brown hull plate
+    "ochre": pbr("M_EF_Ochre", "ef_ochre", 0.6),                    # ochre machine paint, worn
+    "brass": pbr("M_EF_Brass", "ef_brass"),                         # tarnished gold trim (hoods, wheels, bands)
+    "rust": pbr("M_EF_Rust", "ef_rust"),
     "coarse": pbr("M_EF_RustCoarse", "ef_rustcoarse"),
     "corr": pbr("M_EF_Corr", "ef_corr"),
+    "steel": pbr("M_EF_Steel", "ef_steel"),
+    "grate": pbr("M_EF_Deck", "ef_deck"),                           # tread-plate decking
+    "conc": pbr("M_EF_Concrete", "ef_concrete"),
+    "conc3": pbr("M_EF_Concrete2", "ef_concrete2", 0.8),
+    "hazard": albedo("M_EF_Hazard", "ef_hazard_albedo.jpg", 0.7, 0.0),
     "planks": pbr("M_EF_Planks", "ef_planks"),
     "timber": pbr("M_EF_Timber", "ef_timber"),
     "paintwood": pbr("M_EF_PaintWood", "ef_paintwood"),
-    "steel": pbr("M_Steel", "steel"),
-    "conc": pbr("M_Concrete2", "concrete2"),
-    "conc3": pbr("M_Concrete3", "concrete3", 0.8),
-    "grate": pbr("M_Grate", "grate"),
-    "hazard": albedo("M_Hazard", "hazard_albedo.jpg", 0.7, 0.0),
     "glow": flat("M_EF_Glow", (0.35, 0.09, 0.02), 0.5, emit=(1.0, 0.42, 0.12), strength=4.0),
     "lamp": flat("M_EF_Lamp", (0.2, 0.08, 0.03), 0.4, emit=(1.0, 0.45, 0.15), strength=0.7),
-    "panel": flat("M_EF_Panel", (0.05, 0.06, 0.11), 0.22, 0.55),
-    "cable": flat("M_EF_Cable", (0.035, 0.03, 0.035), 0.75),
-    "paint": flat("M_EF_Paint", (0.62, 0.58, 0.5), 0.85),
-    "rubber": flat("M_EF_Rubber", (0.045, 0.045, 0.05), 0.9),
-    "dark": flat("M_EF_Dark", (0.02, 0.018, 0.022), 0.95),          # door voids, recesses
+    "panel": flat("M_EF_Panel", (0.07, 0.06, 0.045), 0.22, 0.6),    # collector glass, warm dark
+    "cable": flat("M_EF_Cable", (0.035, 0.03, 0.025), 0.75),
+    "paint": flat("M_EF_Paint", (0.7, 0.6, 0.4), 0.85),             # stencilled numerals
+    "rubber": flat("M_EF_Rubber", (0.045, 0.042, 0.04), 0.9),
+    "dark": flat("M_EF_Dark", (0.022, 0.018, 0.014), 0.95),          # door voids, recesses
 }
 MAT["corr"].use_backface_culling = False
-TILE = {"M_EF_Iron": 6.0, "M_EF_Oxide": 2.4, "M_EF_Rust": 2.2, "M_EF_RustCoarse": 2.5, "M_EF_Corr": 2.0,
-        "M_EF_Planks": 2.4, "M_EF_Timber": 1.6, "M_EF_PaintWood": 2.0, "M_Steel": 1.6,
-        "M_Concrete2": 2.4, "M_Concrete3": 2.0, "M_Grate": 1.8, "M_Hazard": 1.0}
+TILE = {"M_EF_Iron": 4.0, "M_EF_Ochre": 2.4, "M_EF_Brass": 1.6, "M_EF_Rust": 2.2, "M_EF_RustCoarse": 2.5, "M_EF_Corr": 2.0,
+        "M_EF_Steel": 1.8, "M_EF_Deck": 1.5, "M_EF_Concrete": 2.6, "M_EF_Concrete2": 2.4, "M_EF_Hazard": 1.0,
+        "M_EF_Planks": 2.4, "M_EF_Timber": 1.6, "M_EF_PaintWood": 2.0}
 
 # ---------------------------------------------------------------------------------------------- mesh builder
 I4 = Matrix.Identity(4)
@@ -403,10 +403,10 @@ def slit(M, c, length, face, z_hood=0.22):
     s = 1 if face[1] == "+" else -1
     if face[0] == "y":
         M.add(cube((length, 0.08, 0.2), (x, y + s * 0.07, z)), "glow")
-        M.add(block((length + 0.2, 0.45, 0.12), (x, y + s * 0.27, z + z_hood), 0.03), "oxide")
+        M.add(block((length + 0.2, 0.45, 0.12), (x, y + s * 0.27, z + z_hood), 0.03), "brass")
     else:
         M.add(cube((0.08, length, 0.2), (x + s * 0.07, y, z)), "glow")
-        M.add(block((0.45, length + 0.2, 0.12), (x + s * 0.27, y, z + z_hood), 0.03), "oxide")
+        M.add(block((0.45, length + 0.2, 0.12), (x + s * 0.27, y, z + z_hood), 0.03), "brass")
 
 def railing(M, p0, p1, h=1.1, spacing=1.6, rnd=None, broken=0.0):
     p0 = Vector(p0); p1 = Vector(p1)
@@ -431,7 +431,7 @@ def wheel(M, c, R=0.55, r=0.22):
     M.add(cyl((0, 0, -0.25), (0, 0, 0.25), 0.1, 8), "steel", m)
 
 def valve_wheel(M, c, R=0.3):
-    M.add(torus(R, 0.035, 18, 5), "oxide", T(*c))
+    M.add(torus(R, 0.035, 18, 5), "brass", T(*c))
     for a in (0, 120, 240):
         M.add(beam(c, Vector(c) + Vector((R * math.cos(math.radians(a)), R * math.sin(math.radians(a)), 0)), 0.04), "steel")
 
@@ -445,7 +445,7 @@ def digit(M, n, c, w=0.3, h=0.56, s=0.07, y=0.0):
     for k in SEG7[n]:
         x, z, horiz = seg[k]
         size = (w, 0.03, s) if horiz else (s, 0.03, h / 2)
-        M.add(cube(size, (cx + x, y, cz + z)), "paint")
+        M.add(cube(size, (cx + x, y - (0.006 if horiz else 0.0), cz + z)), "paint")    # horizontals proud: no z-fight
 
 def clad(M, size, c, mat, rnd, panel=(2.0, 1.5), missing=0.05, loose=0.06, holes=(), t=0.05, gap=0.07, faces="xXyY"):
     """Hang plates with seams over the four sides of a box (size, centre c); some plates gone, some swung loose off
@@ -534,8 +534,8 @@ def farm_processor():
             M.add(beam((x, a, 0.4), (x, b, 3.9), 0.26), "steel"); M.add(beam((x, b, 0.4), (x, a, 3.9), 0.26), "steel")
         M.add(beam((x, -7, 0.3), (x, 7, 0.3), 0.5), "steel")
     M.add(block((21, 15, 0.7), (0, 0, 4.55), 0.1), "iron")
-    for y in (-7.55, 7.55): M.add(cube((21.2, 0.35, 0.95), (0, y, 4.5)), "oxide")
-    for x in (-10.55, 10.55): M.add(cube((0.35, 15.4, 0.95), (x, 0, 4.5)), "oxide")
+    for y in (-7.55, 7.55): M.add(cube((21.2, 0.35, 0.95), (0, y, 4.5)), "ochre")
+    for x in (-10.55, 10.55): M.add(cube((0.35, 15.4, 0.95), (x, 0, 4.5)), "ochre")
     C.add(cube((21, 15, 4.9), (0, 0, 2.45)), None)
     # mid block 16 x 11, z 4.9..11: ribs, a band, two rows of ember slits, a big loading door
     M.add(block((16, 11, 6.1), (0.5, 0.5, 7.95), 0.12), "iron")
@@ -545,7 +545,7 @@ def farm_processor():
     for y in range(-4, 6, 2):
         M.add(cube((0.32, 0.28, 6.1), (8.65, y + 0.5, 7.95)), "steel")
         M.add(cube((0.32, 0.28, 6.1), (-7.65, y + 0.5, 7.95)), "steel")
-    M.add(cube((16.6, 11.6, 0.45), (0.5, 0.5, 8.3)), "oxide")
+    M.add(cube((16.6, 11.6, 0.45), (0.5, 0.5, 8.3)), "ochre")
     for z in (6.4, 9.7):
         for x in ((-0.5, 1.5, 3.5, 5.5, 7.5) if z < 8 else (-4.5, -2.5, 1.5, 3.5, 5.5)):
             slit(M, (x, -5.0, z), 1.5, "y-")
@@ -556,16 +556,16 @@ def farm_processor():
     C.add(cube((16, 11, 6.1), (0.5, 0.5, 7.95)), None)
     # upper deck z 11..11.7 on brackets, railing along the front (part of it torn)
     M.add(block((19, 13, 0.7), (0.5, 0.5, 11.35), 0.1), "iron")
-    for y in (-6.0, 7.0): M.add(cube((19.2, 0.3, 0.8), (0.5, y, 11.3)), "oxide")
+    for y in (-6.0, 7.0): M.add(cube((19.2, 0.3, 0.8), (0.5, y, 11.3)), "ochre")
     for x in (-6, -2, 2, 6):
         M.add(beam((x, -5.0, 9.0), (x, -5.9, 11.0), 0.3), "steel")
         M.add(beam((x + 1, 6.0, 9.0), (x + 1, 6.9, 11.0), 0.3), "steel")
     for y in (-3, 1, 5): M.add(beam((8.5, y, 9.0), (9.8, y, 11.0), 0.3), "steel")
     railing(M, (-8.5, -5.8, 11.7), (9.5, -5.8, 11.7), rnd=rnd, broken=0.3)
     C.add(cube((19, 13, 0.7), (0.5, 0.5, 11.35)), None)
-    # top housing (oxide panels, sloped roof, a lit window strip) and a squat side block with vents
+    # top housing (ochre panels, sloped roof, a lit window strip) and a squat side block with vents
     M.add(block((8, 7, 4.6), (3, 1.5, 14.0)), "iron")
-    clad(M, (8, 7, 4.6), (3, 1.5, 14.0), "oxide", rnd, (1.6, 1.15), missing=0.08, holes=[((-0.5, -3, 14.6), (6.5, -1, 15.4))])
+    clad(M, (8, 7, 4.6), (3, 1.5, 14.0), "ochre", rnd, (1.6, 1.15), missing=0.08, holes=[((-0.5, -3, 14.6), (6.5, -1, 15.4))])
     for x in (-1.0, 7.0):
         for y in (-2.0, 5.0): M.add(cube((0.35, 0.35, 4.7), (x, y, 14.0)), "iron")
     M.add(block((8.8, 7.8, 0.4)), "iron", T(3, 1.5, 16.6) @ Rx(-7))
@@ -583,7 +583,7 @@ def farm_processor():
     c2 = (M.xf((7.6, 0.8, 22.3)), M.xf((9.6, -6.0, 11.9)))
     # big drum on the +X face (round machinery with an ember ring inside)
     dm = T(9.15, 0.0, 7.95) @ Ry(90)
-    M.add(tube(2.9, 2.45, 1.3, 28), "oxide", dm)
+    M.add(tube(2.9, 2.45, 1.3, 28), "ochre", dm)
     M.add(cyl((0, 0, -0.65), (0, 0, -0.25), 2.5, 28), "iron", dm)
     M.add(cyl((0, 0, -0.3), (0, 0, 0.95), 0.7, 14), "steel", dm)
     M.add(torus(1.75, 0.09, 28, 5), "glow", dm @ T(0, 0, -0.22))
@@ -596,7 +596,7 @@ def farm_processor():
     crate(M, (6.0, -6.3, 4.9), 1.1, 8); crate(M, (7.4, -6.1, 4.9), 0.9, -14); crate(M, (6.1, -6.25, 6.0), 0.8, 25)
     pallet(M, (3.4, -6.4), 80, 4.9); pallet(M, (3.4, -6.4), 74, 5.03)
     # hopper on the upper deck, chute down into the block
-    M.add(cyl((-6.0, -2.5, 14.0), (-6.0, -2.5, 17.6), 0.8, 16, r2=3.0), "oxide")
+    M.add(cyl((-6.0, -2.5, 14.0), (-6.0, -2.5, 17.6), 0.8, 16, r2=3.0), "ochre")
     M.add(tube(3.05, 2.85, 1.0, 16), "iron", T(-6.0, -2.5, 18.1))
     for k in range(4):
         a = math.radians(45 + k * 90)
@@ -612,13 +612,13 @@ def farm_processor():
     M.pop(); M.pop()
     # pipes up the back face, stacks on the deck smouldering at the mouth
     for x in (-4.0, -2.8, 5.5):
-        M.add(cyl((x, 6.6, -0.5), (x, 6.6, 10.4), 0.32, 10), "oxide")
-        M.add(cyl((x, 6.6, 10.4), (x, 4.5, 10.4), 0.32, 10), "oxide")
+        M.add(cyl((x, 6.6, -0.5), (x, 6.6, 10.4), 0.32, 10), "ochre")
+        M.add(cyl((x, 6.6, 10.4), (x, 4.5, 10.4), 0.32, 10), "ochre")
         for z in (2.0, 5.5, 8.5): M.add(cyl((x, 6.6, z - 0.1), (x, 6.6, z + 0.1), 0.42, 10), "steel")
     for x, h in ((-2.0, 19.5), (-0.2, 18.0)):
         M.add(cyl((x, 4.6, 11.7), (x, 4.6, h), 0.75, 16), "iron")
-        M.add(torus(0.78, 0.1, 16, 5), "oxide", T(x, 4.6, h - 0.1))
-        M.add(torus(0.78, 0.08, 16, 5), "oxide", T(x, 4.6, 14.5))
+        M.add(torus(0.78, 0.1, 16, 5), "ochre", T(x, 4.6, h - 0.1))
+        M.add(torus(0.78, 0.08, 16, 5), "ochre", T(x, 4.6, 14.5))
         M.add(cyl((x, 4.6, h - 0.35), (x, 4.6, h - 0.3), 0.62, 14), "glow")
         C.add(cube((1.5, 1.5, h - 11.7), (x, 4.6, (h + 11.7) / 2)), None)
     M.pop(); C.pop()
@@ -644,15 +644,15 @@ def sower_boom():
         if rnd.random() < 0.07: continue
         M.add(cube((0.38, 1.8, 0.05), (1.3 + k * 0.44, rnd.uniform(-0.05, 0.05), 1.45)), "planks")
     for x in range(1, 26, 2): M.add(cube((0.3, 6.3, 0.25), (x, 0, 1.3)), "steel")
-    for y in (-3.1, 3.1): M.add(cube((26.2, 0.5, 0.6), (13, y, 1.0)), "oxide")
+    for y in (-3.1, 3.1): M.add(cube((26.2, 0.5, 0.6), (13, y, 1.0)), "ochre")
     for y in (-3.1, 3.1): M.add(cube((26.2, 0.45, 0.5), (13, y, -1.0)), "steel")
     for x in range(4, 23, 2): slit(M, (x + 0.5, -3.0, 0.1), 1.4, "y-", 0.25)
     M.add(cube((8.0, 0.15, 0.6), (9.0, -3.05, -0.7)), "hazard")
     M.push(T(4.0, 0, -3.8)); boxtruss(M, "steel", 18.0, 5.0, 2.6, 2.2, chord=0.32, br=0.16, rnd=rnd, broken=0.12); M.pop()
-    # head block at the high end: oxide panels, round port, stub mast with a cable
+    # head block at the high end: ochre panels, round port, stub mast with a cable
     M.add(chop(block((4.5, 7.0, 4.6), (26.5, 0, 0.5), 0.12), rnd, 2, 0.15), "iron")
     for y in (-3.55, 3.55):
-        for x in (25.2, 27.4): M.add(cube((1.7, 0.12, 2.6), (x, y, 0.3)), "oxide")
+        for x in (25.2, 27.4): M.add(cube((1.7, 0.12, 2.6), (x, y, 0.3)), "ochre")
         M.add(cube((4.7, 0.3, 0.4), (26.5, y, 2.0)), "steel")
     slit(M, (26.3, -3.5, 2.6), 3.2, "y-", 0.25)
     pm = T(28.8, 0, 0.5) @ Ry(90)
@@ -744,7 +744,7 @@ def comm_tower_leaning():
     M.add(cube((0.28, 0.28, 0.32), (2.0, -0.7, 30.7)), "lamp")
     M.push(T(1.4, -1.2, 17.8) @ Rx(80) @ Rz(25)); dish(M, "steel", 1.4, 0.42); M.pop()
     M.push(T(-1.0, 0.8, 25.2) @ Ry(-85)); dish(M, "iron", 0.9, 0.28); M.pop()
-    for zz in (8.0, 16.0): M.add(cube((0.5, 0.5, 0.7), (1.9 - zz * 0.055, -1.9 + zz * 0.055, zz)), "oxide")
+    for zz in (8.0, 16.0): M.add(cube((0.5, 0.5, 0.7), (1.9 - zz * 0.055, -1.9 + zz * 0.055, zz)), "ochre")
     tower_pts = [M.xf((sx * 1.4, sy * 1.4, 20.0)) for sx, sy in ((1, 1), (-1, 1), (0, -1.0))]
     top_pt = M.xf((2.0, -0.7, 37.0))
     M.pop(); C.pop()
@@ -782,9 +782,9 @@ def silo(M, C, cx, cy, r, h, rnd, crumple=0.0):
     M.add(wall, "corr", T(cx, cy, 0))
     top = h - (4 if crumple else 0)
     for z in [k * 2.5 + 1.5 for k in range(int(top / 2.5))]:
-        M.add(torus(r + 0.06, 0.08, seg, 4), "steel", T(cx, cy, z))
+        M.add(torus(r + 0.06, 0.08, seg, 4), "brass", T(cx, cy, z))
     if not crumple:
-        M.add(cyl((cx, cy, h), (cx, cy, h + r * 0.55), r + 0.15, seg, r2=0.5), "oxide")
+        M.add(cyl((cx, cy, h), (cx, cy, h + r * 0.55), r + 0.15, seg, r2=0.5), "ochre")
         M.add(cyl((cx, cy, h + r * 0.55 - 0.1), (cx, cy, h + r * 0.55 + 0.6), 0.55, 10), "iron")
         M.add(cyl((cx, cy, h + r * 0.55 + 0.6), (cx, cy, h + r * 0.55 + 0.8), 0.8, 10), "iron")
     # ladder up the front
@@ -803,14 +803,14 @@ def grain_silos():
     for k, cx in enumerate((-4.0, 3.0, 10.0)):
         silo(M, C, cx, 0.0, R, H, rnd, crumple=0.45 if k == 2 else 0.0)
     # the crumpled silo's roof, lying in the grass
-    M.add(cyl((0, 0, 0), (0, 0, R * 0.55), R + 0.15, 28, r2=0.5), "oxide", T(16.5, -4.5, 1.3) @ Ry(70) @ Rz(15))
+    M.add(cyl((0, 0, 0), (0, 0, R * 0.55), R + 0.15, 28, r2=0.5), "ochre", T(16.5, -4.5, 1.3) @ Ry(70) @ Rz(15))
     C.add(cube((2, 6.5, 6.5), (16.5, -4.5, 1.3)), None)
     # elevator leg tower and head house
     M.push(T(-11.0, 0.0, 0.0))
     lattice(M, "steel", 25.0, 3.2, 2.8, 10, leg=0.24, rnd=rnd, broken=0.05)
-    M.add(cube((4.6, 3.8, 3.4), (0, 0, 26.7)), "oxide")
+    M.add(cube((4.6, 3.8, 3.4), (0, 0, 26.7)), "ochre")
     M.add(cube((5.0, 4.2, 0.3)), "iron", T(0, 0, 28.5) @ Rx(-6))
-    M.add(cyl((0.4, 0.4, 0.0), (0.4, 0.4, 25.0), 0.45, 10), "oxide")
+    M.add(cyl((0.4, 0.4, 0.0), (0.4, 0.4, 25.0), 0.45, 10), "ochre")
     M.add(cyl((-0.6, -0.4, 0.0), (-0.6, -0.4, 25.0), 0.35, 10), "iron")
     slit(M, (0.0, -1.9, 27.2), 3.0, "y-")
     M.add(cube((1.3, 0.12, 2.2), (0.9, -1.75, 1.1)), "dark")
@@ -843,8 +843,8 @@ def pivot_span():
         for sy in (-1, 1):
             M.add(beam((sx * 1.6, sy * 1.6, 0.35), (sx * 0.35, sy * 0.35, 4.6), 0.18), "steel")
     M.add(cyl((0, 0, 0.3), (0, 0, 5.4), 0.25, 12), "steel")
-    M.add(cube((1.0, 1.0, 0.7), (0, 0, 4.9)), "oxide")
-    M.add(cube((0.8, 0.5, 1.2), (1.2, -1.6, 0.95)), "oxide")
+    M.add(cube((1.0, 1.0, 0.7), (0, 0, 4.9)), "ochre")
+    M.add(cube((0.8, 0.5, 1.2), (1.2, -1.6, 0.95)), "ochre")
     M.add(cube((0.2, 0.08, 0.14), (1.2, -1.87, 1.3)), "lamp")
     C.add(cube((4, 4, 5.5), (0, 0, 2.6)), None)
 
@@ -868,7 +868,7 @@ def pivot_span():
         M.add(beam((x, y - 1.3, 2.5), (x, y + 1.3, 2.5), 0.1), "steel")
         M.add(beam((x, y - 2.5, 0.75), (x, y + 2.5, 0.75), 0.26), "steel")
         for s in (-1, 1): wheel(M, (x, y + s * 2.5, 0.75))
-        M.add(cube((0.6, 0.5, 0.45), (x, y, 1.05)), "oxide")
+        M.add(cube((0.6, 0.5, 0.45), (x, y, 1.05)), "ochre")
         C.add(cube((0.6, 5.5, 1.6), (x, y, 0.8)), None)
 
     H = 4.2
@@ -898,7 +898,7 @@ def collector_row():
             M.add(beam((x, 0, -0.4), (x, 0, 1.0), 0.22), "steel"); M.add(beam((x, 0, 1.0), (x + 0.3, -0.25, 2.2), 0.22), "steel")
         else:
             M.add(beam((x, 0, -0.4), (x, 0, 2.2), 0.22), "steel")
-        M.add(cube((0.5, 0.5, 0.4), (x, 0, 2.3)), "oxide")
+        M.add(cube((0.5, 0.5, 0.4), (x, 0, 2.3)), "ochre")
         C.add(cube((0.3, 0.3, 2.4), (x, 0, 1.1)), None)
     M.add(cyl((-0.6, 0, 2.42), (16.6, 0, 2.42), 0.12, 10), "steel")
     for i in range(8):
@@ -917,7 +917,7 @@ def collector_row():
         if i == 6: M.add(chop(cube((1.0, 1.2, 0.04)), rnd, 1), "panel", T(xc + 0.6, -2.4, 0.03) @ Rz(30))
     C.add(cube((17, 3.2, 0.3), (0, 0, 0)), None, T(8, 0, 2.6) @ Rx(-28))
     # junction box on the first post, sequence plate, cable into the grass
-    M.add(cube((0.6, 0.3, 0.8), (0.0, -0.3, 1.2)), "oxide")
+    M.add(cube((0.6, 0.3, 0.8), (0.0, -0.3, 1.2)), "ochre")
     M.add(cube((0.12, 0.05, 0.08), (0.15, -0.47, 1.45)), "lamp")
     M.add(cube((0.5, 0.05, 0.22), (0.0, -0.47, 0.65)), "hazard")
     cable(M, (-0.1, -0.35, 0.8), (-1.6, -0.6, 0.04), 0.1, 0.025, 6, lie=(-4.0, -0.5, 0))
@@ -943,8 +943,8 @@ def pump_house():
     M.add(cube((1.9, 0.3, 0.25), (0.15, -2.55, 2.75)), "hazard")
     for x in (-3.0, 3.0):
         for y in (-2.5, 2.5): M.add(cube((0.32, 0.32, 3.8), (x, y, 2.3)), "steel")
-    for y in (-2.5, 2.5): M.add(cube((6.3, 0.34, 0.3), (0, y, 0.75)), "oxide")
-    for x in (-3.0, 3.0): M.add(cube((0.34, 5.3, 0.3), (x, 0, 0.75)), "oxide")
+    for y in (-2.5, 2.5): M.add(cube((6.3, 0.34, 0.3), (0, y, 0.75)), "ochre")
+    for x in (-3.0, 3.0): M.add(cube((0.34, 5.3, 0.3), (x, 0, 0.75)), "ochre")
     clad(M, (6.25, 5.25, 3.6), (0, 0, 2.3), "rust", rnd, (1.55, 1.2), missing=0.04, loose=0.08,
          holes=[((-0.8, -4, 0), (1.1, -2, 2.85)), ((2.5, -0.4, 2.7), (4, 2.0, 3.35))])
     dm = T(-0.6, -2.62, 1.6) @ Rz(-70)                                                       # plank door ajar on its hinge
@@ -966,7 +966,7 @@ def pump_house():
     pallet(M, (-4.6, 1.4), 90); pallet(M, (-4.6, 1.4), 84, 0.13); pallet(M, (-4.55, 1.4), 93, 0.26)
     slit(M, (3.0, 0.8, 3.0), 1.8, "x+", 0.2)
     # inside: a pump tank, glimpsed through the door
-    M.add(cyl((-1.2, 0.6, 0.5), (-1.2, 0.6, 2.4), 0.9, 14), "oxide")
+    M.add(cyl((-1.2, 0.6, 0.5), (-1.2, 0.6, 2.4), 0.9, 14), "ochre")
     M.add(cyl((-1.2, 0.6, 1.6), (1.5, 0.6, 1.6), 0.18, 8), "steel")
     # roof: purlins, three corrugated sheets falling to the front; the middle one caved in
     for y in (-2.6, 0.0, 2.6):
